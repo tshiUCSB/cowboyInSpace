@@ -1,5 +1,5 @@
 
-var enableLog = false;
+var enableLog = true;
 var isReading = false;
 var readings = {
 	"interval": 0,
@@ -22,20 +22,66 @@ var interval;
 var isMobile = 
 	/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ?
  		true : false;
-
+var devicePermission = {
+		"motion": true,
+		"orientation": true
+	};
 
 
 window.onload = function() {
+	let hasPermission = checkDevicePermission();
 	setButtonListeners();
 	setCSVFields();
 }
 
+function checkDevicePermission() {
+	let permButton = document.getElementById("permissionButton");
+	let hasPermission = true;
+	if (typeof DeviceMotionEvent.requestPermission === 'function') {
+		permButton.style.display = "initial";
+		devicePermission["motion"] = false;
+		hasPermission = false;
+	}
+	if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+		permButton.style.display = "initial";
+		devicePermission["orientation"] = false;
+		hasPermission = false;
+	}
+	if (enableLog) {
+		console.log(devicePermission);
+	}
+	return hasPermission;
+}
+
+function getDevicePermission() {
+	if (enableLog) {
+		console.log("requesting permission");
+		// console.log(devicePermission);
+	}
+	if (!devicePermission["motion"]) {
+		DeviceMotionEvent.requestPermission()
+			.then(permState => {
+				if (permState === 'granted') {
+					devicePermission["motion"] = true;
+				}
+			});
+	}
+	if (!devicePermission["orientation"]) {
+		DeviceOrientationEvent.requestPermission()
+			.then(permState => {
+				if (permState === 'granted') {
+					devicePermission["orientation"] = true;
+				}
+			});
+	}
+	let permButton = document.getElementById("permissionButton");
+	permButton.style.display = checkDevicePermission ? "none" : "initial";
+}
+
 function setButtonListeners() {
 	let startButton = document.getElementById("startButton");
-	// startButton.addEventListener('touchstart', toggleTracking);
 	startButton.addEventListener('click', startTrackMode);
 	let consoleButton = document.getElementById("consoleButton");
-	// consoleButton.addEventListener('touchstart', printConsole);
 	consoleButton.addEventListener('click', printConsole);
 	let csvButton = document.getElementById("csvButton");
 	csvButton.addEventListener('click', downloadCSV);
@@ -43,9 +89,19 @@ function setButtonListeners() {
 	clearButton.addEventListener('click', clearCSV);
 	let exitButton = document.getElementById("exitButton");
 	exitButton.addEventListener('click', exitTrackMode);
+	let permButton = document.getElementById("permissionButton");
+	permButton.addEventListener('click', getDevicePermission);
 }
 
 function startTrackMode() {
+	for(const type in devicePermission) {
+		if (!devicePermission[type]) {
+			let history = document.getElementById("history");
+			history.innerHTML = 
+				"Please grant permission to " + type;
+			return;
+		}
+	}
 	let trackScreen = document.getElementById("yeetMode");
 	yeetMode.style.display = "initial";
 	if (isMobile) {
