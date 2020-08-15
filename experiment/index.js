@@ -41,7 +41,8 @@ var thresholds = {
 		"duration": 3000
 	},
 	"draw": {
-		"alpha": -100
+		"alpha": -100,
+		"populationConstants": [-70, 65, .2, 96]
 	},
 	"fire": {
 		"alpha": 50
@@ -62,12 +63,10 @@ function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.readings = aclData;
 	this.triggerReady = null;
 	this.checkReady = null;
+	this.stopReady = null;
 	this.updateReadings = null;
-	this.touchContact = false;
-	this.flipTouchContact = function() {
-		this.touchContact = !this.touchContact;
-	}
 	this.indicateReadied = null;
+	this.animReq = undefined;
 }
 
 function triggerReady() {
@@ -95,13 +94,15 @@ function checkReady(timestamp) {
 			return;
 		}
 	}
-	// else if (!this.touchContact) {
-	// 	return;
-	// }
 	else {
 		gunslinger.readyStart = timestamp;
 	}
-	window.requestAnimationFrame(gunslinger.checkReady);
+	gunslinger.animReq = window.requestAnimationFrame(gunslinger.checkReady);
+}
+
+function stopReady() {
+	logger("stopping ready");
+	window.cancelAnimationFrame(gunslinger.animReq);
 }
 
 function indicateReadied() {
@@ -124,9 +125,16 @@ function checkInMargins(a, b, threshold) {
 	return true;
 }
 
+function modelPopulation(t, cst) {
+	// cst = [y, c, k, p]
+	// y: vertical shift | c: center of graph | k: steepness factor | 
+	// p: max population / carrying capacity
+	// P(t) = p/(1 + e^(-k(t - c))) + y
+	return cst[3] / (1 + Math.exp(-cst[2] * (t - cst[1]))) + cst[0];
+}
+
 function playAudio(name) {
 	let aud = new Audio("../docs/assets/audio/" + name + ".mp3");
-	// let aud = new Audio("ghostTown_jingle.mp3");
 	logger("playing " + name);
 	aud.play();
 }
@@ -199,11 +207,11 @@ function startTrackMode() {
 	}
 	if (isMobile) {
 		yeetMode.addEventListener("touchstart", gunslinger.triggerReady);
-		yeetMode.addEventListener("touchend", gunslinger.flipTouchContact);
+		yeetMode.addEventListener("touchend", gunslinger.stopReady);
 	}
 	else {
 		yeetMode.addEventListener("mousedown", gunslinger.triggerReady);
-		yeetMode.addEventListener("mouseup", gunslinger.flipTouchContact);
+		yeetMode.addEventListener("mouseup", gunslinger.stopReady);
 	}
 }
 
@@ -366,6 +374,7 @@ window.addEventListener( "load", function() {
 	gunslinger = new Gunslinger(false, false, false, readings);
 	gunslinger.triggerReady = triggerReady;
 	gunslinger.checkReady = checkReady;
+	gunslinger.stopReady = stopReady;
 	gunslinger.updateReadings = updateReadings;
 	gunslinger.indicateReadied = indicateReadied;
 	let hasPermission = checkDevicePermission();
