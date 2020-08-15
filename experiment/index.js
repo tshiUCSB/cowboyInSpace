@@ -16,6 +16,14 @@ var readings = {
 	"beta": 0,
 	"gamma": 0,
 }
+var keys = [];
+for(let z = 0; z < Object.keys(readings).length; ++z) {
+	keys.push( Object.keys(readings)[z] );
+}
+var values = [];
+for(let z = 0; z < keys.length; ++z) {
+	values.push( readings[keys[z]] );
+}
 var csv  = "";
 var startTime;
 var interval;
@@ -40,15 +48,6 @@ var thresholds = {
 		"alpha": 50
 	}
 };
-
-// var gunslinger = {
-// 	hasReadied: false,
-// 	hasDrawn: false,
-// 	hasFired: false,
-// 	readings: {},
-// 	updateReadings: updateReadings,
-// 	checkReady: checkReady
-// };
 
 function logger( msg ) {
 	if (enableLog) {
@@ -111,8 +110,10 @@ function indicateReadied() {
 	playAudio("ghostTown_jingle");
 }
 
-function updateReadings(newReadings) {
-	gunslinger.readings = newReadings;
+function updateReadings() {
+	for(let z = 0; z < keys.length; z++) {
+		values[z] = readings[keys[z]];
+	}
 }
 
 function checkInMargins(a, b, threshold) {
@@ -131,57 +132,50 @@ function playAudio(name) {
 	aud.play();
 }
 
+function checkIndivPermission(evt, name) {
+	if (evt != undefined && evt.requestPermission != undefined) {
+		permButton.style.display = "initial";
+		return devicePermission[name] = false;
+	}
+}
+
 function checkDevicePermission() {
 	let permButton = document.getElementById("permissionButton");
 	let hasPermission = true;
-	if (window.DeviceMotionEvent != undefined && window.DeviceMotionEvent.requestPermission != undefined) {
-		permButton.style.display = "initial";
-		devicePermission["motion"] = false;
-		hasPermission = false;
-	}
-	if (window.DeviceOrientationEvent != undefined && window.DeviceOrientationEvent.requestPermission != undefined) {
-		permButton.style.display = "initial";
-		devicePermission["orientation"] = false;
-		hasPermission = false;
-	}
+	if (!checkIndivPermission(window.DeviceMotionEvent, "motion")) hasPermission = false;
+	if (!checkIndivPermission(window.DeviceOrientationEvent, "orientation")) hasPermission = false;
 	logger(devicePermission);
 	return hasPermission;
 }
 
+function getIndivPermission(evt, name) {
+	evt.requestPermission().then(permState => {
+		if (permState === 'granted') {
+			devicePermission[name] = true;
+		}
+	});
+}
+
 function getDevicePermission() {
 	logger("requesting permission");
-	if (!devicePermission["motion"]) {
-		DeviceMotionEvent.requestPermission()
-			.then(permState => {
-				if (permState === 'granted') {
-					devicePermission["motion"] = true;
-				}
-			});
-	}
-	if (!devicePermission["orientation"]) {
-		DeviceOrientationEvent.requestPermission()
-			.then(permState => {
-				if (permState === 'granted') {
-					devicePermission["orientation"] = true;
-				}
-			});
-	}
+	if (!devicePermission["motion"]) getIndivPermission(window.DeviceMotionEvent, "motion");
+	if (!devicePermission["motion"]) getIndivPermission(window.DeviceOrientationEvent, "orientation");
 	let permButton = document.getElementById("permissionButton");
 	permButton.style.display = checkDevicePermission ? "none" : "initial";
 }
 
 function setButtonListeners() {
 	let startButton = document.getElementById("startButton");
-	startButton.addEventListener('click', startTrackMode);
 	let consoleButton = document.getElementById("consoleButton");
-	consoleButton.addEventListener('click', printConsole);
 	let csvButton = document.getElementById("csvButton");
-	csvButton.addEventListener('click', downloadCSV);
 	let clearButton = document.getElementById("clearButton");
-	clearButton.addEventListener('click', clearCSV);
 	let exitButton = document.getElementById("exitButton");
-	exitButton.addEventListener('click', exitTrackMode);
 	let permButton = document.getElementById("permissionButton");
+	startButton.addEventListener('click', startTrackMode);
+	consoleButton.addEventListener('click', printConsole);
+	csvButton.addEventListener('click', downloadCSV);
+	clearButton.addEventListener('click', clearCSV);
+	exitButton.addEventListener('click', exitTrackMode);
 	permButton.addEventListener('click', getDevicePermission);
 }
 
@@ -274,27 +268,25 @@ function readDeviceMotion(e) {
 	let rotRate = e.rotationRate;
 	let data = [e.interval, acc.x, acc.y, acc.z, accGrav.x, accGrav.y, 
 		accGrav.z, rotRate.alpha, rotRate.beta, rotRate.gamma];
-	let keys = Object.keys(readings);
 	for(let i = 0; i < data.length; i++) {
-		readings[keys[i]] = data[i];
+		if(data[i] != null) readings[keys[i]] = data[i];
 	}
 	readings["yAccGrav"] = 9.8;
 	updateReadingDisplay();
-	gunslinger.updateReadings(readings);
+	gunslinger.updateReadings();
 }
 
 function readDeviceOrientation(e) {
-	readings["alpha"] = e.alpha;
-	readings["beta"] = e.beta;
-	readings["gamma"] = e.gamma;
+	if(e.alpha != null) readings["alpha"] = e.alpha;
+	if(e.beta != null) readings["beta"] = e.beta;
+	if(e.gamma != null) readings["gamma"] = e.gamma;
 	updateReadingDisplay();
-	gunslinger.updateReadings(readings);
+	gunslinger.updateReadings();
 }
 
 function updateReadingDisplay() {
 	let display = document.getElementById("readingDisplay");
 	let textDisplay = "";
-	let keys = Object.keys(readings);
 	for(let i = 0; i < keys.length; i++) {
 		textDisplay += (keys[i] + ":" + readings[keys[i]] + " | ");
 	}
@@ -304,7 +296,6 @@ function updateReadingDisplay() {
 function printReading() {
 	let display = document.getElementById("history");
 	let newText = "";
-	let values = Object.values(readings);
 	for(let i = 0; i < values.length; i++) {
 		newText += (values[i].toPrecision(3) + " | ");
 	}
@@ -312,12 +303,10 @@ function printReading() {
 }
 
 function setCSVFields() {
-	let keys = Object.keys(readings);
 	csv = keys.join() + "\n";
 }
 
 function updateCSV() {
-	let values = Object.values(readings);
 	csv += values.join() + "\n";
 }
 
