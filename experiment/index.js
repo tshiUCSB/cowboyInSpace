@@ -1,4 +1,4 @@
-
+var gunslinger;
 var enableLog = true;
 var isReading = false;
 var readings = {
@@ -49,6 +49,12 @@ var thresholds = {
 // 	updateReadings: updateReadings,
 // 	checkReady: checkReady
 // };
+
+function logger( msg ) {
+	if (enableLog) {
+		console.log(msg);
+	}
+}
 
 function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.hasReadied = hasReadied;
@@ -121,43 +127,29 @@ function checkInMargins(a, b, threshold) {
 function playAudio(name) {
 	// let aud = new Audio("../docs/assets/audio/" + name + ".mp3");
 	let aud = new Audio("ghostTown_jingle.mp3");
-	if (enableLog) {
-		console.log("playing " + name);
-	}
+	logger("playing " + name);
 	aud.play();
-}
-
-window.onload = function() {
-	let hasPermission = checkDevicePermission();
-	setButtonListeners();
-	setCSVFields();
-	console.log(gunslinger);
 }
 
 function checkDevicePermission() {
 	let permButton = document.getElementById("permissionButton");
 	let hasPermission = true;
-	if (typeof DeviceMotionEvent.requestPermission === 'function') {
+	if (window.DeviceMotionEvent != undefined && window.DeviceMotionEvent.requestPermission != undefined) {
 		permButton.style.display = "initial";
 		devicePermission["motion"] = false;
 		hasPermission = false;
 	}
-	if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+	if (window.DeviceOrientationEvent != undefined && window.DeviceOrientationEvent.requestPermission != undefined) {
 		permButton.style.display = "initial";
 		devicePermission["orientation"] = false;
 		hasPermission = false;
 	}
-	if (enableLog) {
-		console.log(devicePermission);
-	}
+	logger(devicePermission);
 	return hasPermission;
 }
 
 function getDevicePermission() {
-	if (enableLog) {
-		console.log("requesting permission");
-		// console.log(devicePermission);
-	}
+	logger("requesting permission");
 	if (!devicePermission["motion"]) {
 		DeviceMotionEvent.requestPermission()
 			.then(permState => {
@@ -236,9 +228,7 @@ function exitTrackMode() {
 }
 
 function toggleTracking() {
-	if (enableLog) {
-		console.log("tracking toggled");
-	}
+	logger("tracking toggled");
 	if (!isReading) {
 		interval = document.getElementById("interval").value;
 		interval = parseInt(interval);
@@ -256,9 +246,7 @@ function toggleTracking() {
 }
 
 function startTracking(interval) {
-	if (enableLog) {
-		console.log("tracking starts");
-	}
+	logger("tracking starts");
 	let history = document.getElementById("history");
 	history.innerHTML = "";
 	updateReadingDisplay();
@@ -275,9 +263,7 @@ function startTracking(interval) {
 }
 
 function stopTracking() {
-	if (enableLog) {
-		console.log("tracking stops");
-	}
+	logger("tracking stops");
 	window.removeEventListener('devicemotion', readDeviceMotion);
 	window.removeEventListener('deviceorientation', readDeviceOrientation);
 }
@@ -388,4 +374,11 @@ function printConsole() {
 	};
 }
 
-var gunslinger = new Gunslinger(false, false, false, readings);
+window.addEventListener( "load", function() {
+	gunslinger = new Gunslinger(false, false, false, readings);
+	let hasPermission = checkDevicePermission();
+	setButtonListeners();
+	setCSVFields();
+	console.log(gunslinger);
+} );
+
