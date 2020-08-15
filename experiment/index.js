@@ -1,24 +1,24 @@
 var gunslinger;
 var enableLog = true;
 var isReading = false;
-var readings = {
-	"interval": 0,
-	"xAcc": 0,
-	"yAcc": 0,
-	"zAcc": 0,
-	"xAccGrav": 0,
-	"yAccGrav": 0,
-	"zAccGrav": 0,
-	"alphaRotRate": 0,
-	"betaRotRate": 0,
-	"gammaRotRate": 0,
-	"alpha": 0,
-	"beta": 0,
-	"gamma": 0,
-}
-var keys = [];
-for(let z = 0; z < Object.keys(readings).length; ++z) {
-	keys.push( Object.keys(readings)[z] );
+var keys = [
+	"interval", 
+	"xAcc", 
+	"yAcc", 
+	"zAcc", 
+	"xAccGrav", 
+	"yAccGrav", 
+	"zAccGrav", 
+	"alphaRotRate", 
+	"betaRotRate", 
+	"gammaRotRate", 
+	"alpha", 
+	"beta", 
+	"gamma"
+];
+var readings = {};
+for(let z = 0; z < keys.length; ++z) {
+	readings[keys[z]] = 0;
 }
 var values = [];
 for(let z = 0; z < keys.length; ++z) {
