@@ -12,7 +12,9 @@ for( i = 0; i < URL.length; ++i ) {
 		}
 		room_code += URL.charAt( i );
 	} else {
-		q_found = true;
+		if( URL.charAt( i ) == '?' ) {
+			q_found = true;
+		}
 	}
 }
 
