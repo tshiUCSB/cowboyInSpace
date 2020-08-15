@@ -6,7 +6,9 @@ var URL = document.location.href,
 	RTC_OPT = {
 		optional : [ { RtpDataChannels : true } ]
 	},
-	OP_SYNC = 0x1;
+	DELAY_SYNC = 100,
+	OP_SYNC = 0x1,
+	OP_SYNC_ACK = 0x2;
 
 var	room_code = "",
 	duel = "",
@@ -14,12 +16,22 @@ var	room_code = "",
 	game_channel = null,
 	rtc_id = 0,
 	last_id = -1,
+	last_sync = -1,
 	viewer_map = {},
 	q_found = false,
 	one = true,
 	synced = false,
+	sync_id = 0,
+	syncs = [],
+	acked_syncs = 0,
 	me = "",
 	i;
+
+function Sync( id ) {
+	this.id = id;
+	this.time = Date.now();
+	this.ping = -1;
+}
 
 for( i = 0; i < URL.length; ++i ) {
 	if( q_found ) {
@@ -41,13 +53,46 @@ function bt( o ) {
 	return String.fromCharCode( o );
 }
 
+function send_sync() {
+	var id = sync_id++;
+	syncs.push( new Sync( id ) );
+	game_channel.send( bt( OP_SYNC ) + bt( id ) );
+}
+
 function sync_loop( time ) {
-	if( !synced ) window.requestAnimationFrame( sync_loop );
+	if( last_sync == -1 ) last_sync = time;
+	if( time - last_sync >= DELAY_SYNC ) {
+		send_sync();
+	}
+	if( synced ) {
+		var sync,
+			sum = 0,
+			minPing = null,
+			maxPing = -1;
+		for( i = 0; i < syncs.length; ++i ) {
+			sync = syncs[ i ];
+			if( sync.ping >= 0 ) {
+				sum += sync.ping;
+				if( minPing == null ) {
+					minPing = sync.ping;
+					maxPing = sync.ping;
+				} else if( sync.ping > maxPing ) {
+					maxPing = sync.ping;
+				}
+			}
+		}
+		sum -= minPing + maxPing;
+		sum /= 18 * 2;
+		sum = ( sum + 0.5 ) | 0;
+		alert( sum );
+	} else {
+		window.requestAnimationFrame( sync_loop );
+	}
 }
 
 function handle_game_channel_open() {
 	if( one ) {
-		game_channel.send( bt( OP_SYNC ) + Date.now() );
+		send_sync();
 		window.requestAnimationFrame( sync_loop );
 	}
 }
@@ -59,7 +104,16 @@ function handle_game_channel_msg( evt ) {
 	console.log( msg );
 	switch( code ) {
 		case OP_SYNC:
-			game_channel.send( bt( OP_SYNC_ACK ) )
+			game_channel.send( bt( OP_SYNC_ACK ) + msg )
+			break;
+		case OP_SYNC_ACK:
+			var id = msg.charCodeAt( 0 ),
+				sync = syncs[ id ];
+			sync.ping = Date.now() - sync.time;
+			acked_syncs++;
+			if( acked_syncs == 20 ) {
+				synced = true;
+			}
 			break;
 	}
 }
