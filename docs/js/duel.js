@@ -5,7 +5,8 @@ var URL = document.location.href,
 	},
 	RTC_OPT = {
 		optional : [ { RtpDataChannels : true } ]
-	};
+	},
+	OP_SYNC = 0x1;
 
 var	room_code = "",
 	duel = "",
@@ -16,6 +17,7 @@ var	room_code = "",
 	viewer_map = {},
 	q_found = false,
 	one = true,
+	synced = false,
 	me = "",
 	i;
 
@@ -34,6 +36,33 @@ for( i = 0; i < URL.length; ++i ) {
 }
 
 duel = "/duels/" + room_code;
+
+function bt( o ) {
+	return String.fromCharCode( o );
+}
+
+function sync_loop( time ) {
+	if( !synced ) window.requestAnimationFrame( sync_loop );
+}
+
+function handle_game_channel_open() {
+	if( one ) {
+		game_channel.send( bt( OP_SYNC ) + Date.now() );
+		window.requestAnimationFrame( sync_loop );
+	}
+}
+
+function handle_game_channel_msg( evt ) {
+	var msg = evt.data;
+	var code = msg.charCodeAt( 0 );
+	msg = msg.substring( 1 );
+	console.log( msg );
+	switch( code ) {
+		case OP_SYNC:
+			game_channel.send(  )
+			break;
+	}
+}
 
 function callback_empty( err ) {
 	if( err ) {
@@ -126,7 +155,9 @@ function callback_join_room( err ) {
 	} else {
 		game_rtc = new RTCPeerConnection( RTC_CFG, RTC_OPT );
 		game_rtc.onicecandidate = callback_ice_candidate;
-		game_channel = game_rtc.createDataChannel( "game" );
+		game_channel = game_rtc.createDataChannel( "game", { reliable : false } );
+		game_channel.onopen = handle_game_channel_open;
+		game_channel.onmessage = handle_game_channel_msg;
 		firebase.database().ref( duel + "/players/1" ).on( "value", callback_signals );
 		firebase.database().ref( duel + "/players/2" ).on( "value", callback_signals );
 	}
