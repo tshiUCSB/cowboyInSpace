@@ -59,7 +59,7 @@ function handle_game_channel_msg( evt ) {
 	console.log( msg );
 	switch( code ) {
 		case OP_SYNC:
-			game_channel.send(  )
+			game_channel.send( bt( OP_SYNC_ACK ) )
 			break;
 	}
 }

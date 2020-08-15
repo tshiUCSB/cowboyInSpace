@@ -50,8 +50,6 @@ var thresholds = {
 // 	checkReady: checkReady
 // };
 
-var gunslinger = new Gunslinger(false, false, false, readings);
-
 function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.hasReadied = hasReadied;
 	this.hasDrawn = hasDrawn;
@@ -390,4 +388,4 @@ function printConsole() {
 	};
 }
 
-
+var gunslinger = new Gunslinger(false, false, false, readings);
