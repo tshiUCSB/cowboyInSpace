@@ -62,38 +62,38 @@ function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.hasFired = hasFired;
 	this.readyStart = undefined;
 	this.readings = aclData;
-	this.triggerReady = triggerReady;
-	this.checkReady = checkReady;
-	this.updateReadings = updateReadings;
+	this.triggerReady = null;
+	this.checkReady = null;
+	this.updateReadings = null;
 	this.touchContact = false;
 	this.flipTouchContact = function() {
 		this.touchContact = !this.touchContact;
 	}
-	this.indicateReadied = indicateReadied;
+	this.indicateReadied = null;
 }
 
 function triggerReady() {
-	this.touchContact = true;
+	gunslinger.touchContact = true;
 	window.requestAnimationFrame(gunslinger.checkReady);
 }
 
 function checkReady(timestamp) {
-	if (this.readyStart === undefined) {
-		this.readyStart = timestamp;
+	if (gunslinger.readyStart === undefined) {
+		gunslinger.readyStart = timestamp;
 	}
 
-	let elapsed = timestamp - this.readyStart;
-	document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp + " | " + this.readyStart;
+	let elapsed = timestamp - gunslinger.readyStart;
+	document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp + " | " + gunslinger.readyStart;
 
-	let snap = this.readings;
+	let snap = gunslinger.readings;
 	let t = thresholds.ready;
 	let actData = [snap.yAccGrav, snap.x, snap.y, snap.z];
 	let expData = [9.8, 0, 0, 0];
 	let thresh = [t.yGrav, t.xyz, t.xyz, t.xyz];
 	if (checkInMargins(actData, expData, thresh)) {
-		if (elapsed > t.duration && !this.hasReadied) {
-			this.hasReadied = true;
-			this.indicateReadied();
+		if (elapsed > t.duration && !gunslinger.hasReadied) {
+			gunslinger.hasReadied = true;
+			gunslinger.indicateReadied();
 			return;
 		}
 	}
@@ -101,7 +101,7 @@ function checkReady(timestamp) {
 	// 	return;
 	// }
 	else {
-		this.readyStart = timestamp;
+		gunslinger.readyStart = timestamp;
 	}
 	window.requestAnimationFrame(gunslinger.checkReady);
 }
@@ -112,7 +112,7 @@ function indicateReadied() {
 }
 
 function updateReadings(newReadings) {
-	this.readings = newReadings;
+	gunslinger.readings = newReadings;
 }
 
 function checkInMargins(a, b, threshold) {
@@ -376,6 +376,10 @@ function printConsole() {
 
 window.addEventListener( "load", function() {
 	gunslinger = new Gunslinger(false, false, false, readings);
+	gunslinger.triggerReady = triggerReady;
+	gunslinger.checkReady = checkReady;
+	gunslinger.updateReadings = updateReadings;
+	gunslinger.indicateReadied = indicateReadied;
 	let hasPermission = checkDevicePermission();
 	setButtonListeners();
 	setCSVFields();
