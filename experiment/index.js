@@ -38,7 +38,6 @@ var thresholds = {
 	"ready": {
 		"xyz": 10,
 		"yGrav": 5,
-		"alpha": 20,
 		"duration": 3000
 	},
 	"draw": {
@@ -126,8 +125,8 @@ function checkInMargins(a, b, threshold) {
 }
 
 function playAudio(name) {
-	// let aud = new Audio("../docs/assets/audio/" + name + ".mp3");
-	let aud = new Audio("ghostTown_jingle.mp3");
+	let aud = new Audio("../docs/assets/audio/" + name + ".mp3");
+	// let aud = new Audio("ghostTown_jingle.mp3");
 	logger("playing " + name);
 	aud.play();
 }
@@ -271,7 +270,7 @@ function readDeviceMotion(e) {
 	for(let i = 0; i < data.length; i++) {
 		if(data[i] != null) readings[keys[i]] = data[i];
 	}
-	readings["yAccGrav"] = 9.8;
+	// readings["yAccGrav"] = 9.8;
 	updateReadingDisplay();
 	gunslinger.updateReadings();
 }
