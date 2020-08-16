@@ -26,6 +26,18 @@ body, html {
 	text-align: center;
 }
 
+.tryAgain {
+	display: none;
+}
+
+#winScreen p{
+	font-size: 13vw;
+}
+
+#loseScreen p{
+	font-size: 13vw;
+}
+
 #roomCode {
 	font-size: 8vw;
 }
