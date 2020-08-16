@@ -358,6 +358,7 @@ function init_gunslinger() {
 		gunslinger.updateReadings = updateReadings;
 		gunslinger.indicateReadied = indicateReadied;
 		conn = cn;
+		console.log("init");
 	}
 
 	function initRTC() {

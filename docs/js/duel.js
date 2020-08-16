@@ -14,6 +14,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		SCREEN_START = document.getElementById("startScreen"),
 		SCREEN_FULL = document.getElementById("fullScreen"),
 		SCREEN_INVALID = document.getElementById("invalidScreen"),
+		TEXT_ROOM_CODE = document.getElementById("roomCode"),
 		OP_SYNC = 0x1,
 		OP_SYNC_ACK = 0x2,
 		OP_TIME = 0x3,
@@ -167,6 +168,10 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 				ping_avg = msg.charCodeAt( 0 );
 				offset_time = ( parseInt( msg.substring( 1 ) ) + ping_avg ) - Date.now();
 				game_channel.send( bt( OP_TIME_ACK ) + Date.now().toString() );
+				if( !time_synced ) {
+					callback_sync();
+					time_synced = true;
+				}
 				break;
 			case OP_TIME_ACK:
 				offset_time = ( parseInt( msg ) + ping_avg ) - Date.now();
@@ -299,6 +304,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 					data[ "from" ] = me;
 					data[ "type" ] = "join";
 					data[ "id" ] = rtc_id++;
+					TEXT_ROOM_CODE.innerHTML = room_code;
 					SCREEN_WAIT.setAttribute( "class", "show" );
 					firebase.database().ref( duel + "/players/" + p ).push().set( data, callback_join_room );
 				}
@@ -314,6 +320,6 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 
 	if(callback_init_rtc != null && callback_init_rtc != undefined) {
 		callback_info[ "send" ] = send_gun_packet;
-		init_rtc_callback( callback_info );
+		callback_init_rtc( callback_info );
 	}
 }
