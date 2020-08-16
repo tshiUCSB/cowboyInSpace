@@ -311,10 +311,9 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 			}
 		} else {
 			SCREEN_INVALID.setAttribute( "class", "show" );
+			callback_sync();
 		}
 	}
-
-	firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
 
 	console.log( room_code );
 
@@ -322,4 +321,6 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		callback_info[ "send" ] = send_gun_packet;
 		callback_init_rtc( callback_info );
 	}
+
+	firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
 }
