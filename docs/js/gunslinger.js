@@ -7,6 +7,7 @@ function init_gunslinger() {
 	var isReading = false;
 	var startEvt = "click";
 	var startListener = null;
+	var conn = null;
 	var keys = [
 		"interval", 
 		"xAcc", 
@@ -31,7 +32,6 @@ function init_gunslinger() {
 		values.push( readings[keys[z]] );
 	}
 	readings["yAccGrav"] = 9.8;
-	var csv  = "";
 	var startTime;
 	var interval;
 	var isMobile = 
@@ -304,7 +304,6 @@ function init_gunslinger() {
 		logger("tracking starts");
 		window.addEventListener('devicemotion', readDeviceMotion);
 		window.addEventListener('deviceorientation', readDeviceOrientation);
-		window.requestAnimationFrame(step);
 		if (window.navigator.vibrate) {
 			console.log("can vibrate");
 			window.navigator.vibrate(200);
@@ -340,46 +339,11 @@ function init_gunslinger() {
 		gunslinger.updateReadings();
 	}
 
-	function setCSVFields() {
-		csv = keys.join() + "\n";
+	function onMsg(msg) {
+
 	}
 
-	function updateCSV() {
-		csv += values.join() + "\n";
-	}
-
-	function downloadCSV() {
-		var hiddenElement = document.createElement('a');
-	    hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);
-	    hiddenElement.target = '_blank';
-	    hiddenElement.download = 'deviceData.csv';
-	    hiddenElement.click();
-	}
-
-	function clearCSV() {
-		csv = "";
-	}
-
-	function step(timestamp) {
-		if (startTime === undefined) {
-			startTime = timestamp;
-		}
-		const elapsed = timestamp - startTime;
-
-		if (elapsed > 1000 / interval) {
-			updateCSV();
-			startTime = elapsed;
-		}
-
-		if (isReading) {
-			window.requestAnimationFrame(step);
-		}
-		else {
-			startTime = undefined;
-		}
-	}
-
-	function initRTCCallback(evt) {
+	function initRTCCallback(cn) {
 		gunslinger = new Gunslinger(false, false, false, false, readings);
 		gunslinger.checkMotion = checkMotion;
 		gunslinger.triggerReady = triggerReady;
@@ -393,9 +357,11 @@ function init_gunslinger() {
 		gunslinger.indicateFire = indicateFire;
 		gunslinger.updateReadings = updateReadings;
 		gunslinger.indicateReadied = indicateReadied;
-		console.log(evt);
-		console.log(gunslinger);
-		startTrackMode();
+		conn = cn;
+	}
+
+	function initRTC() {
+		init_rtc(initRTCCallback, onMsg, startTrackMode);
 	}
 
 	function removeStartListner() {
@@ -406,7 +372,7 @@ function init_gunslinger() {
 
 	function skipPermission() {
 		removeStartListner();
-		init_rtc(initRTCCallback);
+		initRTC();
 	}
 
 	function checkIndivPermission(evt, name) {
@@ -429,7 +395,7 @@ function init_gunslinger() {
 			if (permState === 'granted') {
 				devicePermission[name] = true;
 				if( devicePermission["motion"] && devicePermission["orientation"] ) {
-					init_rtc(initRTCCallback);
+					initRTC();
 				};
 			}
 		});

@@ -12,5 +12,12 @@
 	color: white;
 	text-align: center;
 	font-size: 5vw;
-	display: none;
+}
+
+.hide {
+	display: none!important;
+}
+
+.show {
+	display: block!important;
 }

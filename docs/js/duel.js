@@ -1,4 +1,4 @@
-function init_rtc( init_rtc_callback ) {
+function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 	var URL = document.location.href,
 		RTC_CFG = { 
 			iceServers : [ { url : "stun:stun2.1.google.com:19302" } ] 
@@ -9,12 +9,21 @@ function init_rtc( init_rtc_callback ) {
 		DELAY_TIME = 100,
 		DELAY_SYNC = 100,
 		MAX_SYNCS = 20,
+		SCREEN_WAIT = document.getElementById("waitScreen"),
+		SCREEN_SYNC = document.getElementById("syncScreen"),
+		SCREEN_START = document.getElementById("startScreen"),
+		SCREEN_FULL = document.getElementById("fullScreen"),
+		SCREEN_INVALID = document.getElementById("invalidScreen"),
 		OP_SYNC = 0x1,
 		OP_SYNC_ACK = 0x2,
 		OP_TIME = 0x3,
-		OP_TIME_ACK = 0x4;
+		OP_TIME_ACK = 0x4,
+		OP_GUNSLINGER = 0x5;
 
 	var	callback_info = {},
+		callback_init_rtc = cb_init_rtc,
+		callback_packet = cb_packet,
+		callback_sync = cb_sync,
 		room_code = "",
 		duel = "",
 		game_rtc = null,
@@ -66,6 +75,10 @@ function init_rtc( init_rtc_callback ) {
 		game_channel.send( bt( OP_TIME ) + bt( ping_avg ) + Date.now().toString() );
 	}
 
+	function send_gun_packet( op, msg ) {
+		game_channel.send( bt( OP_GUNSLINGER ) + bt( op ) + msg );
+	}
+
 	function send_sync() {
 		var id = sync_id++;
 		syncs.push( new Sync( id ) );
@@ -76,9 +89,10 @@ function init_rtc( init_rtc_callback ) {
 		if( last_time == -1 ) last_time = time;
 		if( time - last_time > DELAY_TIME ) {
 			send_time();
+			last_time = time;
 		}
 		if( time_synced ) {
-
+			callback_sync();
 		} else {
 			window.requestAnimationFrame( time_loop );
 		}
@@ -88,6 +102,7 @@ function init_rtc( init_rtc_callback ) {
 		if( last_sync == -1 ) last_sync = time;
 		if( time - last_sync >= DELAY_SYNC ) {
 			send_sync();
+			last_sync = time;
 		}
 		if( synced ) {
 			var sync,
@@ -123,6 +138,8 @@ function init_rtc( init_rtc_callback ) {
 
 	function handle_game_channel_open() {
 		if( one ) {
+			SCREEN_WAIT.setAttribute( "class", "hide" );
+			SCREEN_SYNC.setAttribute( "class", "show" );
 			send_sync();
 			window.requestAnimationFrame( sync_loop );
 		}
@@ -150,12 +167,13 @@ function init_rtc( init_rtc_callback ) {
 				ping_avg = msg.charCodeAt( 0 );
 				offset_time = ( parseInt( msg.substring( 1 ) ) + ping_avg ) - Date.now();
 				game_channel.send( bt( OP_TIME_ACK ) + Date.now().toString() );
-				document.write( offset_time);
 				break;
 			case OP_TIME_ACK:
 				offset_time = ( parseInt( msg ) + ping_avg ) - Date.now();
 				time_synced = true;
-				alert( offset_time );
+				break;
+			case OP_GUNSLINGER:
+				callback_packet( msg );
 				break;
 		}
 	}
@@ -178,7 +196,6 @@ function init_rtc( init_rtc_callback ) {
 		switch( action.type ) {
 			case "join":
 				if( action.from == "2" ) {
-					console.log( "we made it?" );
 					game_rtc.createOffer().then( function( offer ) {
 						game_rtc.setLocalDescription( offer );
 					} ).then( function() {
@@ -260,6 +277,7 @@ function init_rtc( init_rtc_callback ) {
 	}
 
 	function callback_query_room( snapshot ) {
+		SCREEN_START.setAttribute( "class", "hide" );
 		if( snapshot.exists() ) {
 			if( snapshot.child( "active" ).val() ) {
 				var p = null,
@@ -274,16 +292,19 @@ function init_rtc( init_rtc_callback ) {
 				} else {
 					me = p = "1";
 				}
-				if( p != null ) {
+				if( p == null ) {
+					SCREEN_FULL.setAttribute( "class", "show" );
+				} else {
 					data = {};
 					data[ "from" ] = me;
 					data[ "type" ] = "join";
 					data[ "id" ] = rtc_id++;
+					SCREEN_WAIT.setAttribute( "class", "show" );
 					firebase.database().ref( duel + "/players/" + p ).push().set( data, callback_join_room );
 				}
 			}
 		} else {
-
+			SCREEN_INVALID.setAttribute( "class", "show" );
 		}
 	}
 
@@ -291,7 +312,8 @@ function init_rtc( init_rtc_callback ) {
 
 	console.log( room_code );
 
-	if(init_rtc_callback != null && init_rtc_callback != undefined) {
+	if(callback_init_rtc != null && callback_init_rtc != undefined) {
+		callback_info[ "send" ] = send_gun_packet;
 		init_rtc_callback( callback_info );
 	}
 }
