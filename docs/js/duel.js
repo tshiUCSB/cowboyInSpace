@@ -148,7 +148,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 
 	function handle_game_channel_open() {
 		if( one ) {
-			SCREEN_WAIT.setAttribute( "class",  );
+			SCREEN_WAIT.setAttribute( "class", "hide center" );
 			SCREEN_SYNC.setAttribute( "class", "show center" );
 			send_sync();
 			window.requestAnimationFrame( sync_loop );
