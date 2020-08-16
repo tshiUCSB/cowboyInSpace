@@ -1,8 +1,5 @@
 /* room.css */
 
-#cis {
-	color: white;
-}
 
 #startControls {
 	grid-column-start: 4;
@@ -14,13 +11,6 @@
 #controlContainer {
 	position: absolute;
 	top: 0;
-}
-
-#absoluteContainer {
-	position: absolute;
-	width: 100vw;
-	height: 100vh;
-	overflow: hidden;
 }
 
 #codeInput {

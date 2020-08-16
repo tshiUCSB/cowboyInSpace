@@ -28,6 +28,14 @@ body {
 	grid-column-end: span 8;
 	grid-row-start: 1;
 	grid-row-end: span 3;
+	color: white;
+}
+
+.absoluteContainer {
+	position: absolute;
+	width: 100vw;
+	height: 100vh;
+	overflow: hidden;
 }
 
 .gameButton {
@@ -62,6 +70,8 @@ button {
 	min-height: 100vh;
 	min-width: 100vw;
 	z-index: -100;
+	position: absolute;
+	top: 0;
 }
 
 

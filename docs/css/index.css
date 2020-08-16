@@ -20,13 +20,6 @@
 	z-index: 100;
 }
 
-#absoluteContainer {
-	position: absolute;
-	width: 100vw;
-	height: 100vh;
-	overflow: hidden;
-}
-
 #controlContainer {
 	position: absolute;
 	top: 0;
@@ -51,11 +44,6 @@
 	animation-timing-function: linear;
 }
 
-#cis {
-	color: white;
-	/*-webkit-text-stroke-width: 6px;
-    -webkit-text-stroke-color: white;
-*/}
 
 @keyframes flash {
 	0% {opacity: 1;}
