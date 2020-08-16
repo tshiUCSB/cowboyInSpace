@@ -19,9 +19,6 @@ body {
 	justify-items: center;
 }
 
-.flexContainer {
-	display: flex;
-}
 
 #cis {
 	text-align: center;
@@ -66,4 +63,6 @@ button {
 	min-width: 100vw;
 	z-index: -100;
 }
+
+
 
