@@ -72,6 +72,7 @@ function init_gunslinger() {
 		this.hasDrawn = hasDrawn;
 		this.hasFired = hasFired;
 		this.animStart = undefined;
+		this.audioLoaded = false;
 		this.readings = aclData;
 		this.duelStarted = duelStarted;
 
@@ -304,12 +305,16 @@ function init_gunslinger() {
 	}
 
 	function toggleTracking() {
-		AUD_JINGLE.play();
-		AUD_GUN_COCK.play();
-		AUD_GUN_SHOT.play();
-		AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
-		AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
-		AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
+		if(gunslinger.hasReadied) return;
+		if(!gunslinger.audioLoaded) {
+			AUD_JINGLE.play();
+			AUD_GUN_COCK.play();
+			AUD_GUN_SHOT.play();
+			AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
+			AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
+			AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
+			gunslinger.audioLoaded = true;
+		}
 		logger("tracking toggled");
 		if (!isReading) {
 			interval = document.getElementById("interval").value;
@@ -329,8 +334,6 @@ function init_gunslinger() {
 
 	function startTracking(interval) {
 		logger("tracking starts");
-		let history = document.getElementById("history");
-		history.innerHTML = "";
 		window.addEventListener('devicemotion', readDeviceMotion);
 		window.addEventListener('deviceorientation', readDeviceOrientation);
 		window.requestAnimationFrame(step);
@@ -387,7 +390,6 @@ function init_gunslinger() {
 
 	function clearCSV() {
 		csv = "";
-		setCSVFields();
 	}
 
 	function step(timestamp) {
@@ -465,14 +467,8 @@ function init_gunslinger() {
 
 	function setButtonListeners() {
 		let startButton = document.getElementById("startButton");
-		let csvButton = document.getElementById("csvButton");
-		let clearButton = document.getElementById("clearButton");
-		let exitButton = document.getElementById("exitButton");
 		let permButton = document.getElementById("permissionButton");
 		startButton.addEventListener('click', startTrackMode);
-		csvButton.addEventListener('click', downloadCSV);
-		clearButton.addEventListener('click', clearCSV);
-		exitButton.addEventListener('click', exitTrackMode);
 		permButton.addEventListener('click', getDevicePermission);
 	}
 
@@ -482,7 +478,6 @@ function init_gunslinger() {
 		init_rtc(initRTCCallback);
 	}
 	setButtonListeners();
-	setCSVFields();
 }
 
 window.addEventListener( "load", function() {
