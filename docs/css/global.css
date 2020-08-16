@@ -39,16 +39,31 @@ body {
     margin: 40px 0;
     padding: 30px;
     border-radius: 40px;
-    border-style: none;
+    border-style: solid;
+	border-color: rgba(255, 255, 255, .8);
+	border-width: 10px;
+	color: white;
+	background-color: #1c3474;
 }
 
 .gameButton a {
 	text-decoration: none;
+	color: white;
 }
 
 .gameButton:hover {
-	border-style: solid;
-	border-color: white;
-	border-width: 3px;
+/*	border-style: solid;
+*/	border-color: white;
+/*	border-width: 3px;
+*/}
+
+button {
+	font-family: "Rye";
+}
+
+.bg {
+	min-height: 100vh;
+	min-width: 100vw;
+	z-index: -100;
 }
 
