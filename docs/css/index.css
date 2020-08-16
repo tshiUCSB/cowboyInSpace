@@ -1,1 +1,43 @@
 /* index.css */
+
+#audioToggle {
+	width: 100px;
+}
+
+#startControls {
+	display: none;
+	grid-column-start: 4;
+    grid-column-end: span 4;
+    grid-row-start: 4;
+    grid-row-end: span 5;
+}
+
+#clickMe {
+	width: 100vw;
+	height: 100vh;
+	position: absolute;
+	top: 0;
+	z-index: 100;
+}
+
+#absoluteContainer {
+	position: absolute;
+}
+
+#controlContainer {
+	position: absolute;
+	top: 0;
+	background-image: url("../assets/bg_1.png");
+	background-size: 100vh;
+	background-repeat: no-repeat;
+}
+
+#clickMe p {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+	font-size: 5vw;
+	text-align: center;
+}

@@ -1,1 +1,54 @@
 /* global.css */
+
+@font-face {
+	font-family: 'Rye', cursive;
+}
+
+body {
+	font-family: "Rye";
+	margin: 0;
+}
+
+.gridContainer {
+	display: grid;
+	width: 100vw;
+	height: 100vh;
+	grid-template-rows: repeat(10, 10vh);
+	grid-template-columns: repeat(10, 10vw);
+	align-items: center;
+	justify-items: center;
+}
+
+.flexContainer {
+	display: flex;
+}
+
+#cis {
+	text-align: center;
+	font-size: 15vw;
+	margin: 0;
+	grid-column-start: 2;
+	grid-column-end: span 8;
+	grid-row-start: 1;
+	grid-row-end: span 3;
+}
+
+.gameButton {
+	width: 100%;
+	font-size: 5vw;
+    margin: 40px 0;
+    padding: 30px;
+    border-radius: 40px;
+    border-style: none;
+}
+
+.gameButton a {
+	text-decoration: none;
+}
+
+.gameButton:hover {
+	border-style: solid;
+	border-color: white;
+	border-width: 3px;
+}
+
