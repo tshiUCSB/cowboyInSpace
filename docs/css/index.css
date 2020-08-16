@@ -27,9 +27,9 @@
 #controlContainer {
 	position: absolute;
 	top: 0;
-	background-image: url("../assets/bg_1.png");
+	/*background-image: url("../assets/bg_1.png");
 	background-size: 100vh;
-	background-repeat: no-repeat;
+	background-repeat: no-repeat;*/
 }
 
 #clickMe p {
@@ -40,4 +40,14 @@
 	transform: translate(-50%, -50%);
 	font-size: 5vw;
 	text-align: center;
+	color: white;
 }
+
+#cis {
+	color: white;
+	/*-webkit-text-stroke-width: 6px;
+    -webkit-text-stroke-color: white;
+*/}
+
+
+
