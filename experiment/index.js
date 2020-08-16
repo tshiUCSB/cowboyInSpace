@@ -248,13 +248,13 @@ function playAudio(name) {
 
 function checkIndivPermission(evt, name) {
 	if (evt != undefined && evt.requestPermission != undefined) {
+		let permButton = document.getElementById("permissionButton");
 		permButton.style.display = "initial";
 		return devicePermission[name] = false;
 	}
 }
 
 function checkDevicePermission() {
-	let permButton = document.getElementById("permissionButton");
 	let hasPermission = true;
 	if (!checkIndivPermission(window.DeviceMotionEvent, "motion")) hasPermission = false;
 	if (!checkIndivPermission(window.DeviceOrientationEvent, "orientation")) hasPermission = false;
