@@ -233,7 +233,7 @@ function init_gunslinger() {
 				if (enemyReady && conn.one) {
 					gunslinger.triggerCountdown();
 					reliable.send_cd();
-				} else if (enemyReady) {
+				} else {
 					reliable.send_ready();
 				}
 				gunslinger.indicateReadied();
@@ -289,6 +289,7 @@ function init_gunslinger() {
 		if (checkInMargins(aclData, expData, thresh) && (dXAcc > t.dXAcc) && !gunslinger.hasFired) {
 			gunslinger.animStart = undefined;
 			gunslinger.hasFired = true;
+			reliable.send_fire();
 			gunslinger.indicateFire();
 			return false;
 		}
@@ -296,7 +297,14 @@ function init_gunslinger() {
 	}
 
 	function onReady(msg) {
-
+		enemyReady = true;
+		console.log("ready");
+		if (conn.one) {
+			if (gunslinger.hasReadied) {
+				reliable.send_cd();
+				gunslinger.triggerCountdown();
+			}
+		}
 	}
 
 	function onCD(msg) {

@@ -76,11 +76,16 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		return ( Date.now() + offset_time ) - time;
 	}
 
+	function my_time( time ) {
+		return time - offset_time;
+	}
+
 	function send_time() {
 		game_channel.send( bt( OP_TIME ) + bt( ping_avg ) + Date.now().toString() );
 	}
 
 	function send_gun_packet( op, msg ) {
+		console.log("sending")
 		game_channel.send( bt( OP_GUNSLINGER ) + bt( op ) + msg );
 	}
 
@@ -323,6 +328,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		callback_info[ "send" ] = send_gun_packet;
 		callback_info[ "one" ] = one;
 		callback_info[ "passed_time" ] = passed_time;
+		callback_info[ "my_time" ] = my_time;
 		callback_init_rtc( callback_info );
 	}
 

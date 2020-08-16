@@ -42,6 +42,7 @@ function init_reliable( cb_init, c ) {
 			id,
 			p,
 			ack;
+		console.log(msg);
 		op = msg.charCodeAt( 0 );
 		id = msg.charCodeAt( 1 );
 		msg = msg.substring( 2 );
@@ -53,6 +54,7 @@ function init_reliable( cb_init, c ) {
 				p = packets[ id ];
 				if( p.op == ( op - 1 ) ) {
 					packets[ id ] = null;
+					console.log("acknowledged");
 				} else {
 					return;
 				}
@@ -130,7 +132,7 @@ function init_reliable( cb_init, c ) {
 	}
 
 	function send_fire() {
-		send_packet( OP_READY, Date.now().toString() );
+		send_packet( OP_FIRE, Date.now().toString() );
 	}
 
 	if( callback_init != null && callback_init != undefined ) {
