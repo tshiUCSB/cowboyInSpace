@@ -42,19 +42,18 @@ var thresholds = {
 		"duration": 3000
 	},
 	"countdown": {
-		"duration": 3000
+		"duration": 5000
 	},
 	"draw": {
-		"dBeta": 95,
+		"dBeta": 90,
 		"betaMoE": 8,
 		"xyz": 3,
 		"populationConstants": [-70, 65, .2, 96]
 	},
 	"fire": {
-		"dBeta": 50,
-		"betaMoE": 8,
-		"dXAcc": 25,
-		"xAccMoE": 5
+		"dBeta": 45,
+		"betaMoE": 20,
+		"dXAcc": 20
 	}
 };
 
@@ -64,12 +63,13 @@ function logger( msg ) {
 	}
 }
 
-function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
+function Gunslinger(hasReadied, hasDrawn, hasFired, duelStarted, aclData) {
 	this.hasReadied = hasReadied;
 	this.hasDrawn = hasDrawn;
 	this.hasFired = hasFired;
 	this.animStart = undefined;
 	this.readings = aclData;
+	this.duelStarted = duelStarted;
 
 	this.checkMotion = null;
 
@@ -91,8 +91,6 @@ function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.betaI = undefined;
 	this.xAccMin = undefined;
 	this.xAccMax = undefined;
-	this.waitEnded = undefined;
-	this.gameStarted = undefined;
 }
 
 function triggerReady() {
@@ -202,10 +200,10 @@ function checkFire(snap, t, elapsed, timestamp) {
 	let dBeta = snap.beta - gunslinger.betaI;
 	logger(snap.xAcc + " | " + gunslinger.xAccMin + " | " + dXAcc + " || " + snap.beta + " | " + 
 		gunslinger.betaI + " | " + dBeta);
-	let aclData = [dXAcc, dBeta];
-	let expData = [t.dXAcc, t.dBeta];
-	let thresh = [t.xAccMoE, t.betaMoE];
-	if (checkInMargins(aclData, expData, thresh) && !gunslinger.hasFired) {
+	let aclData = [dBeta];
+	let expData = [t.dBeta];
+	let thresh = [t.betaMoE];
+	if (checkInMargins(aclData, expData, thresh) && (dXAcc > t.dXAcc) && !gunslinger.hasFired) {
 		gunslinger.animStart = undefined;
 		gunslinger.hasFired = true;
 		gunslinger.indicateFire();
@@ -480,7 +478,7 @@ function printConsole() {
 }
 
 window.addEventListener( "load", function() {
-	gunslinger = new Gunslinger(false, false, false, readings);
+	gunslinger = new Gunslinger(false, false, false, false, readings);
 	gunslinger.checkMotion = checkMotion;
 	gunslinger.triggerReady = triggerReady;
 	gunslinger.checkReady = checkReady;
