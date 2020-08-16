@@ -1,4 +1,7 @@
 function init_gunslinger() {
+	var AUD_GUN_COCK = new Audio("../assets/audio/empty.wav");
+	var AUD_GUN_SHOT = new Audio("../assets/audio/empty.wav");
+	var AUD_JINGLE = new Audio("../assets/audio/empty.wav");
 	var gunslinger;
 	var enableLog = true;
 	var isReading = false;
@@ -94,8 +97,25 @@ function init_gunslinger() {
 		this.xAccMax = undefined;
 	}
 
+	function playAudio(name) {
+		let aud;
+		switch(name) {
+			case "jingle":
+				aud = AUD_JINGLE;
+				break;
+			case "gun_cock":
+				aud = AUD_GUN_COCK;
+				break;
+			case "gun_shot":
+				aud = AUD_GUN_SHOT;
+				break;
+		}
+		logger("playing " + name);
+		aud.play();
+	}
+
 	function indicateReadied() {
-		playAudio("ghostTown_jingle");
+		playAudio("jingle");
 		document.getElementById("yeetMode").style.backgroundColor = "rgba(0, 255, 0, .7)";
 	}
 
@@ -241,12 +261,6 @@ function init_gunslinger() {
 		return cst[3] / (1 + Math.exp(-cst[2] * (t - cst[1]))) + cst[0];
 	}
 
-	function playAudio(name) {
-		let aud = new Audio("../docs/assets/audio/" + name + ".mp3");
-		logger("playing " + name);
-		aud.play();
-	}
-
 	function startTrackMode() {
 		for(const type in devicePermission) {
 			if (!devicePermission[type]) {
@@ -290,6 +304,12 @@ function init_gunslinger() {
 	}
 
 	function toggleTracking() {
+		AUD_JINGLE.play();
+		AUD_GUN_COCK.play();
+		AUD_GUN_SHOT.play();
+		AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
+		AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
+		AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
 		logger("tracking toggled");
 		if (!isReading) {
 			interval = document.getElementById("interval").value;
