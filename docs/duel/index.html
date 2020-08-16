@@ -10,7 +10,7 @@
 	<body>
 
 		<div class="absoluteContainer">
-			<div id="startScreen" class="show center">
+			<div id="startScreen" class="hide center">
 				<div id="cis"> Cowboys in Space </div>
 				<!--<button id="startButton">Start/End</button>-->
 				<button id="permissionButton" class="gameButton">Start Duel</button>
@@ -29,6 +29,14 @@
 			</div>
 			<div id="syncScreen" class="hide center">
 				<p>Vibing with Fellow Gunslinger<br><span class="dot">. . .</span></p>
+			</div>
+			<div id="winScreen" class="show center">
+				<p>VICTORY</p>
+				<button class="gameButton tryAgain">Try Again</button>
+			</div>
+			<div id="loseScreen" class="hide center">
+				<p>DEFEAT</p>
+				<button class="gameButton tryAgain">Try Again</button>
 			</div>
 			<div id="yeetMode" class="hide">
 				Hold screen for 3 seconds to ready up
