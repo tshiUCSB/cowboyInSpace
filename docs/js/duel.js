@@ -6,9 +6,13 @@ var URL = document.location.href,
 	RTC_OPT = {
 		optional : [ { RtpDataChannels : true } ]
 	},
+	DELAY_TIME = 100,
 	DELAY_SYNC = 100,
+	MAX_SYNCS = 20,
 	OP_SYNC = 0x1,
-	OP_SYNC_ACK = 0x2;
+	OP_SYNC_ACK = 0x2,
+	OP_TIME = 0x3,
+	OP_TIME_ACK = 0x4;
 
 var	room_code = "",
 	duel = "",
@@ -17,13 +21,17 @@ var	room_code = "",
 	rtc_id = 0,
 	last_id = -1,
 	last_sync = -1,
+	last_time = -1,
 	viewer_map = {},
 	q_found = false,
 	one = true,
 	synced = false,
+	time_synced = false,
 	sync_id = 0,
 	syncs = [],
 	acked_syncs = 0,
+	offset_time = -1,
+	ping_avg = -1,
 	me = "",
 	i;
 
@@ -53,10 +61,26 @@ function bt( o ) {
 	return String.fromCharCode( o );
 }
 
+function send_time() {
+	game_channel.send( bt( OP_TIME ) + bt( ping_avg ) + Date.now().toString() );
+}
+
 function send_sync() {
 	var id = sync_id++;
 	syncs.push( new Sync( id ) );
 	game_channel.send( bt( OP_SYNC ) + bt( id ) );
+}
+
+function time_loop( time ) {
+	if( last_time == -1 ) last_time = time;
+	if( time - last_time > DELAY_TIME ) {
+		send_time();
+	}
+	if( time_synced ) {
+
+	} else {
+		window.requestAnimationFrame( time_loop );
+	}
 }
 
 function sync_loop( time ) {
@@ -68,7 +92,8 @@ function sync_loop( time ) {
 		var sync,
 			sum = 0,
 			minPing = null,
-			maxPing = -1;
+			maxPing = -1,
+			l = 0;
 		for( i = 0; i < syncs.length; ++i ) {
 			sync = syncs[ i ];
 			if( sync.ping >= 0 ) {
@@ -79,12 +104,17 @@ function sync_loop( time ) {
 				} else if( sync.ping > maxPing ) {
 					maxPing = sync.ping;
 				}
+				l++;
+				if( l == MAX_SYNCS ) break;
 			}
 		}
 		sum -= minPing + maxPing;
-		sum /= 18 * 2;
+		sum /= ( MAX_SYNCS - 2 ) * 2;
 		sum = ( sum + 0.5 ) | 0;
-		alert( sum );
+		if( sum > 65535 ) sum = 65535;
+		ping_avg = sum;
+		send_time();
+		window.requestAnimationFrame( time_loop );
 	} else {
 		window.requestAnimationFrame( sync_loop );
 	}
@@ -101,7 +131,7 @@ function handle_game_channel_msg( evt ) {
 	var msg = evt.data;
 	var code = msg.charCodeAt( 0 );
 	msg = msg.substring( 1 );
-	console.log( msg );
+	console.log( code );
 	switch( code ) {
 		case OP_SYNC:
 			game_channel.send( bt( OP_SYNC_ACK ) + msg )
@@ -111,9 +141,20 @@ function handle_game_channel_msg( evt ) {
 				sync = syncs[ id ];
 			sync.ping = Date.now() - sync.time;
 			acked_syncs++;
-			if( acked_syncs == 20 ) {
+			if( acked_syncs == MAX_SYNCS ) {
 				synced = true;
 			}
+			break;
+		case OP_TIME:
+			ping_avg = msg.charCodeAt( 0 );
+			offset_time = ( parseInt( msg.substring( 1 ) ) + ping_avg ) - Date.now();
+			game_channel.send( bt( OP_TIME_ACK ) + Date.now().toString() );
+			document.write( offset_time);
+			break;
+		case OP_TIME_ACK:
+			offset_time = ( parseInt( msg ) + ping_avg ) - Date.now();
+			time_synced = true;
+			alert( offset_time );
 			break;
 	}
 }
