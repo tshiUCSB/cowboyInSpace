@@ -41,14 +41,20 @@ var thresholds = {
 		"yGrav": 5,
 		"duration": 3000
 	},
+	"countdown": {
+		"duration": 3000
+	},
 	"draw": {
 		"dBeta": 95,
-		"betaMoE": 5,
+		"betaMoE": 8,
 		"xyz": 3,
 		"populationConstants": [-70, 65, .2, 96]
 	},
 	"fire": {
-		"alpha": 50
+		"dBeta": 50,
+		"betaMoE": 8,
+		"dXAcc": 25,
+		"xAccMoE": 5
 	}
 };
 
@@ -83,7 +89,8 @@ function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.indicateReadied = null;
 	this.animReq = undefined;
 	this.betaI = undefined;
-	this.motionTime = undefined;
+	this.xAccMin = undefined;
+	this.xAccMax = undefined;
 	this.waitEnded = undefined;
 	this.gameStarted = undefined;
 }
@@ -114,6 +121,7 @@ function checkMotion(timestamp) {
 		motionFunc = gunslinger.checkDraw;
 	}
 	else if (gunslinger.hasReadied && gunslinger.hasDrawn && !gunslinger.hasFired) {
+		logger("checking fire");
 		t = thresholds.fire;
 		motionFunc = gunslinger.checkFire;
 	}
@@ -165,10 +173,11 @@ function checkDraw(snap, t, elapsed, timestamp) {
 	let aclData = [snap.beta - gunslinger.betaI, snap.xAcc, snap.yAcc, snap.zAcc];
 	let expData = [t.dBeta, 0, 0, 0];
 	let thresh = [t.betaMoE, t.xyz, t.xyz, t.xyz];
-	if (checkInMargins(aclData, expData, thresh)) {
+	if (checkInMargins(aclData, expData, thresh) && !gunslinger.hasDrawn) {
 		gunslinger.hasDrawn = true;
 		gunslinger.animStart = undefined;
 		gunslinger.indicateDrawn();
+		gunslinger.triggerFire();
 		return false;
 	}
 	return true;
@@ -178,19 +187,36 @@ function indicateDrawn() {
 	playAudio("gun_cock");
 	let yeetMode = document.getElementById("yeetMode");
 	yeetMode.style.display = "initial";
-	yeetMode.style.backgroundColor = "red";
+	yeetMode.style.backgroundColor = "rgba(0, 0, 255, .7)";
 }
 
 function triggerFire() {
-
+	gunslinger.xAccMin = gunslinger.readings.xAcc;
+	gunslinger.betaI = gunslinger.readings.beta;
+	window.requestAnimationFrame(gunslinger.checkMotion);
 }
 
-function checkFire() {
-	return false;
+function checkFire(snap, t, elapsed, timestamp) {
+	if (gunslinger.xAccMin > snap.xAcc) gunslinger.xAccMin = snap.xAcc;
+	let dXAcc = snap.xAcc - gunslinger.xAccMin;
+	let dBeta = snap.beta - gunslinger.betaI;
+	logger(snap.xAcc + " | " + gunslinger.xAccMin + " | " + dXAcc + " || " + snap.beta + " | " + 
+		gunslinger.betaI + " | " + dBeta);
+	let aclData = [dXAcc, dBeta];
+	let expData = [t.dXAcc, t.dBeta];
+	let thresh = [t.xAccMoE, t.betaMoE];
+	if (checkInMargins(aclData, expData, thresh) && !gunslinger.hasFired) {
+		gunslinger.animStart = undefined;
+		gunslinger.hasFired = true;
+		gunslinger.indicateFire();
+		return false;
+	}
+	return true;
 }
 
 function indicateFire() {
-
+	playAudio("gun_shot");
+	document.getElementById("yeetMode").style.backgroundColor = "rgba(255, 0, 0, .7)";
 }
 
 function updateReadings() {
