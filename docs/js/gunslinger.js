@@ -2,6 +2,7 @@ function init_gunslinger() {
 	var AUD_GUN_COCK = new Audio("../assets/audio/empty.wav");
 	var AUD_GUN_SHOT = new Audio("../assets/audio/empty.wav");
 	var AUD_JINGLE = new Audio("../assets/audio/empty.wav");
+	var AUD_COUNTDOWN = new Audio("../assets/audio/empty.wav");
 	var gunslinger;
 	var enableLog = true;
 	var isReading = false;
@@ -48,7 +49,8 @@ function init_gunslinger() {
 			"duration": 3000
 		},
 		"countdown": {
-			"duration": 5000
+			"duration": 5000,
+			"wholeCount": 5
 		},
 		"draw": {
 			"dBeta": 90,
@@ -84,6 +86,9 @@ function init_gunslinger() {
 		this.checkReady = null;
 		this.stopCheck = null;
 
+		this.triggerCountdown = null;
+		this.checkCountdown = null;
+
 		this.triggerDraw = null;
 		this.checkDraw = null;
 		this.indicateDrawn = null;
@@ -112,9 +117,15 @@ function init_gunslinger() {
 			case "gun_shot":
 				aud = AUD_GUN_SHOT;
 				break;
+			case "countdown":
+				aud = AUD_COUNTDOWN;
 		}
 		logger("playing " + name);
 		aud.play();
+	}
+
+	function changeYeetText(text) {
+		document.getElementById("yeetMode").innerHTML = text;
 	}
 
 	function indicateReadied() {
@@ -134,15 +145,24 @@ function init_gunslinger() {
 	}
 
 	function triggerReady() {
+		changeYeetText("Hold phone perpendicular to ground");
+		window.requestAnimationFrame(gunslinger.checkMotion);
+	}
+
+	function triggerCountdown() {
+		changeYeetText("Duel starting in..." + (thresholds.countdown.duration / 1000 + 1));
 		window.requestAnimationFrame(gunslinger.checkMotion);
 	}
 
 	function triggerDraw() {
+		changeYeetText("Raise your phone to draw weapon");
+		playAudio("jingle");
 		gunslinger.betaI = gunslinger.readings.beta;
 		window.requestAnimationFrame(gunslinger.checkMotion);
 	}
 
 	function triggerFire() {
+		changeYeetText("ITS HIGH NOON");
 		gunslinger.xAccMin = gunslinger.readings.xAcc;
 		gunslinger.betaI = gunslinger.readings.beta;
 		window.requestAnimationFrame(gunslinger.checkMotion);
@@ -173,12 +193,18 @@ function init_gunslinger() {
 			t = thresholds.ready;
 			motionFunc = gunslinger.checkReady;
 		}
-		else if (gunslinger.hasReadied && !gunslinger.hasDrawn) {
+		else if (gunslinger.hasReadied && !gunslinger.duelStarted) {
+			logger("counting down");
+			t = thresholds.countdown;
+			motionFunc = gunslinger.checkCountdown;
+		}
+		else if (gunslinger.hasReadied && gunslinger.duelStarted && !gunslinger.hasDrawn) {
 			logger("checking draw");
 			t = thresholds.draw;
 			motionFunc = gunslinger.checkDraw;
 		}
-		else if (gunslinger.hasReadied && gunslinger.hasDrawn && !gunslinger.hasFired) {
+		else if (gunslinger.hasReadied && gunslinger.duelStarted && gunslinger.hasDrawn 
+			&& !gunslinger.hasFired) {
 			logger("checking fire");
 			t = thresholds.fire;
 			motionFunc = gunslinger.checkFire;
@@ -198,13 +224,29 @@ function init_gunslinger() {
 			if (elapsed > t.duration && !gunslinger.hasReadied) {
 				gunslinger.hasReadied = true;
 				gunslinger.animStart = undefined;
-				gunslinger.triggerDraw();
+				gunslinger.triggerCountdown();
 				gunslinger.indicateReadied();
 				return false;
 			}
 		}
 		else {
 			gunslinger.animStart = timestamp;
+		}
+		return true;
+	}
+
+	function checkCountdown(snap, t, elapsed, timestamp) {
+		if (elapsed % 1000 < t.wholeCount) {
+			let yeetText = document.getElementById("yeetMode").innerHTML;
+			let num = parseInt(yeetText.charAt(yeetText.length - 1));
+			changeYeetText("" + (num - 1));
+			playAudio("countdown");
+		}
+		if (elapsed > t.duration) {
+			gunslinger.animStart = undefined;
+			gunslinger.duelStarted = true;
+			gunslinger.triggerDraw();
+			return false;
 		}
 		return true;
 	}
@@ -284,6 +326,7 @@ function init_gunslinger() {
 			AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
 			AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
 			AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
+			AUD_COUNTDOWN.src = "../assets/audio/countdown.wav";
 			gunslinger.audioLoaded = true;
 		}
 		logger("tracking toggled");
@@ -349,6 +392,8 @@ function init_gunslinger() {
 		gunslinger.triggerReady = triggerReady;
 		gunslinger.checkReady = checkReady;
 		gunslinger.stopCheck = stopCheck;
+		gunslinger.triggerCountdown = triggerCountdown;
+		gunslinger.checkCountdown = checkCountdown;
 		gunslinger.triggerDraw = triggerDraw;
 		gunslinger.checkDraw = checkDraw;
 		gunslinger.indicateDrawn = indicateDrawn;
