@@ -5,6 +5,8 @@ function init_gunslinger() {
 	var gunslinger;
 	var enableLog = true;
 	var isReading = false;
+	var startEvt = "click";
+	var startListener = null;
 	var keys = [
 		"interval", 
 		"xAcc", 
@@ -123,7 +125,6 @@ function init_gunslinger() {
 	function indicateDrawn() {
 		playAudio("gun_cock");
 		let yeetMode = document.getElementById("yeetMode");
-		yeetMode.style.display = "initial";
 		yeetMode.style.backgroundColor = "rgba(0, 0, 255, .7)";
 	}
 
@@ -197,9 +198,8 @@ function init_gunslinger() {
 			if (elapsed > t.duration && !gunslinger.hasReadied) {
 				gunslinger.hasReadied = true;
 				gunslinger.animStart = undefined;
-				document.getElementById("yeetMode").removeEventListener("touchend", gunslinger.stopCheck);
-				gunslinger.indicateReadied();
 				gunslinger.triggerDraw();
+				gunslinger.indicateReadied();
 				return false;
 			}
 		}
@@ -263,16 +263,8 @@ function init_gunslinger() {
 	}
 
 	function startTrackMode() {
-		for(const type in devicePermission) {
-			if (!devicePermission[type]) {
-				let history = document.getElementById("history");
-				history.innerHTML = 
-					"Please grant permission to " + type;
-				return;
-			}
-		}
 		let trackScreen = document.getElementById("yeetMode");
-		yeetMode.style.display = "initial";
+		yeetMode.setAttribute("class", "show");
 		if (isMobile) {
 			yeetMode.addEventListener("touchstart", toggleTracking);
 			yeetMode.addEventListener("touchend", toggleTracking);
@@ -280,27 +272,6 @@ function init_gunslinger() {
 		else {
 			yeetMode.addEventListener("mousedown", toggleTracking);
 			yeetMode.addEventListener("mouseup", toggleTracking);
-		}
-		if (isMobile) {
-			yeetMode.addEventListener("touchstart", gunslinger.triggerReady);
-			yeetMode.addEventListener("touchend", gunslinger.stopCheck);
-		}
-		else {
-			yeetMode.addEventListener("mousedown", gunslinger.triggerReady);
-			yeetMode.addEventListener("mouseup", gunslinger.stopCheck);
-		}
-	}
-
-	function exitTrackMode() {
-		let trackScreen = document.getElementById("yeetMode");
-		yeetMode.style.display = "none";
-		if (isMobile) {
-			yeetMode.removeEventListener("touchstart", toggleTracking);
-			yeetMode.removeEventListener("touchend", toggleTracking);
-		}
-		else {
-			yeetMode.removeEventListener("mousedown", toggleTracking);
-			yeetMode.removeEventListener("mouseup", toggleTracking);
 		}
 	}
 
@@ -317,17 +288,14 @@ function init_gunslinger() {
 		}
 		logger("tracking toggled");
 		if (!isReading) {
-			interval = document.getElementById("interval").value;
-			interval = parseInt(interval);
-			if (!interval) {
-				interval = 10;
-			}
+			interval = 10;
 			isReading = true;
+			gunslinger.triggerReady();
 			startTracking(interval);
 		}
 		else {
 			isReading = false;
-			exitTrackMode();
+			gunslinger.stopCheck();
 			stopTracking();
 		}
 	}
@@ -427,12 +395,22 @@ function init_gunslinger() {
 		gunslinger.indicateReadied = indicateReadied;
 		console.log(evt);
 		console.log(gunslinger);
+		startTrackMode();
+	}
+
+	function removeStartListner() {
+		let permButton = document.getElementById("permissionButton");
+		permButton.removeEventListener(startEvt, startListener);
+		permButton.style.display = "none";
+	}
+
+	function skipPermission() {
+		removeStartListner();
+		init_rtc(initRTCCallback);
 	}
 
 	function checkIndivPermission(evt, name) {
 		if (evt != undefined && evt.requestPermission != undefined) {
-			let permButton = document.getElementById("permissionButton");
-			permButton.style.display = "initial";
 			return devicePermission[name] = false;
 		}
 		return true;
@@ -458,25 +436,24 @@ function init_gunslinger() {
 	}
 
 	function getDevicePermission() {
+		removeStartListner();
 		logger("requesting permission");
 		if (!devicePermission["motion"]) getIndivPermission(window.DeviceMotionEvent, "motion");
 		if (!devicePermission["orientation"]) getIndivPermission(window.DeviceOrientationEvent, "orientation");
-		let permButton = document.getElementById("permissionButton");
-		permButton.style.display = checkDevicePermission ? "none" : "initial";
 	}
 
 	function setButtonListeners() {
 		let startButton = document.getElementById("startButton");
 		let permButton = document.getElementById("permissionButton");
-		startButton.addEventListener('click', startTrackMode);
-		permButton.addEventListener('click', getDevicePermission);
+		//startButton.addEventListener('click', startTrackMode);
+		if (isMobile) startEvt = "touchend";
+		if (checkDevicePermission()) {
+			permButton.addEventListener(startEvt, startListener = skipPermission);
+		} else {
+			permButton.addEventListener(startEvt, startListener = getDevicePermission);
+		}
 	}
 
-	let hasPermission = checkDevicePermission();
-	console.log( hasPermission );
-	if(hasPermission) {
-		init_rtc(initRTCCallback);
-	}
 	setButtonListeners();
 }
 
