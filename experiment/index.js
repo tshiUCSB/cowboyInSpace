@@ -132,9 +132,9 @@ function checkMotion(timestamp) {
 
 function checkReady(snap, t, elapsed, timestamp) {
 	let actData = [snap.yAccGrav, snap.x, snap.y, snap.z];
-	let expData = [9.8, 0, 0, 0];
+	//let expData = [9.8, 0, 0, 0];
 	let thresh = [t.yGrav, t.xyz, t.xyz, t.xyz];
-	if (checkInMargins(actData, expData, thresh)) {
+	if (checkInMargins(actData, [9.8, 0, 0, 0], thresh) || checkInMargins(actData, [-9.8, 0, 0, 0], thresh)) {
 		if (elapsed > t.duration && !gunslinger.hasReadied) {
 			gunslinger.hasReadied = true;
 			gunslinger.animStart = undefined;
