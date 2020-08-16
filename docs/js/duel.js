@@ -148,8 +148,8 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 
 	function handle_game_channel_open() {
 		if( one ) {
-			SCREEN_WAIT.setAttribute( "class", "hide" );
-			SCREEN_SYNC.setAttribute( "class", "show" );
+			SCREEN_WAIT.setAttribute( "class",  );
+			SCREEN_SYNC.setAttribute( "class", "show center" );
 			send_sync();
 			window.requestAnimationFrame( sync_loop );
 		}
@@ -290,7 +290,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 	}
 
 	function callback_query_room( snapshot ) {
-		SCREEN_START.setAttribute( "class", "hide" );
+		SCREEN_START.setAttribute( "class", "hide center" );
 		if( snapshot.exists() ) {
 			if( snapshot.child( "active" ).val() ) {
 				var p = null,
@@ -307,20 +307,19 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 					me = p = "1";
 				}
 				if( p == null ) {
-					SCREEN_FULL.setAttribute( "class", "show" );
+					SCREEN_FULL.setAttribute( "class", "show center" );
 				} else {
 					data = {};
 					data[ "from" ] = me;
 					data[ "type" ] = "join";
 					data[ "id" ] = rtc_id++;
 					TEXT_ROOM_CODE.innerHTML = room_code;
-					SCREEN_WAIT.setAttribute( "class", "show" );
+					SCREEN_WAIT.setAttribute( "class", "show center" );
 					firebase.database().ref( duel + "/players/" + p ).push().set( data, callback_join_room );
 				}
 			}
 		} else {
-			SCREEN_INVALID.setAttribute( "class", "show" );
-			callback_sync();
+			SCREEN_INVALID.setAttribute( "class", "show center" );
 		}
 	}
 

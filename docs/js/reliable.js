@@ -131,8 +131,10 @@ function init_reliable( cb_init, c ) {
 		send_packet( OP_CD, Date.now().toString() );
 	}
 
-	function send_fire() {
-		send_packet( OP_FIRE, Date.now().toString() );
+	function send_fire( bit ) {
+		var d = Date.now();
+		send_packet( OP_FIRE, bt( bit ) + d.toString() );
+		return d;
 	}
 
 	if( callback_init != null && callback_init != undefined ) {

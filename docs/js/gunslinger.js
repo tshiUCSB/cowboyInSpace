@@ -77,6 +77,7 @@ function init_gunslinger() {
 		this.hasReadied = hasReadied;
 		this.hasDrawn = hasDrawn;
 		this.hasFired = hasFired;
+		this.fireTime = -1;
 		this.animOffset = 0;
 		this.animStart = undefined;
 		this.audioLoaded = false;
@@ -289,7 +290,7 @@ function init_gunslinger() {
 		if (checkInMargins(aclData, expData, thresh) && (dXAcc > t.dXAcc) && !gunslinger.hasFired) {
 			gunslinger.animStart = undefined;
 			gunslinger.hasFired = true;
-			reliable.send_fire();
+			gunslinger.fireTime	= reliable.send_fire(0);
 			gunslinger.indicateFire();
 			return false;
 		}
@@ -314,8 +315,33 @@ function init_gunslinger() {
 		}
 	}
 
+	function showLose() {
+		document.getElementById("yeetMode").setAttribute("class", "hide center");
+		document.getElementById("loseScreen").setAttribute("class", "show center");
+	}
+
+	function showWin() {
+		document.getElementById("yeetMode").setAttribute("class", "hide center");
+		document.getElementById("winScreen").setAttribute("class", "show center");
+	}
+
 	function onFire(msg) {
-		console.log( conn.passed_time( parseInt(msg) ) );
+		if(msg.charCodeAt(0) == 1) {
+			showWin();
+		} else {
+			var t = conn.my_time( parseInt(msg.substring(1)) );
+			if( gunslinger.hasFired ) {
+				if( gunslinger.fireTime	< t ) {
+					showWin();
+				} else {
+					showLose();
+				}
+			} else {
+				gunslinger.stopCheck();
+				reliable.send_fire(1);
+				showLose();
+			}
+		}
 	}
 
 	function stopCheck() {
@@ -367,13 +393,12 @@ function init_gunslinger() {
 		if (!isReading) {
 			interval = 10;
 			isReading = true;
-			gunslinger.triggerReady();
 			startTracking(interval);
+			gunslinger.triggerReady();
 		}
 		else {
 			isReading = false;
 			gunslinger.stopCheck();
-			stopTracking();
 		}
 	}
 
