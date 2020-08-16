@@ -8,7 +8,9 @@ function init_gunslinger() {
 	var isReading = false;
 	var startEvt = "click";
 	var startListener = null;
+	var enemyReady = false;
 	var conn = null;
+	var reliable = null;
 	var keys = [
 		"interval", 
 		"xAcc", 
@@ -75,6 +77,7 @@ function init_gunslinger() {
 		this.hasReadied = hasReadied;
 		this.hasDrawn = hasDrawn;
 		this.hasFired = hasFired;
+		this.animOffset = 0;
 		this.animStart = undefined;
 		this.audioLoaded = false;
 		this.readings = aclData;
@@ -179,8 +182,11 @@ function init_gunslinger() {
 
 	function checkMotion(timestamp) {
 		if (gunslinger.animStart === undefined) {
-			gunslinger.animStart = timestamp;
+			gunslinger.animStart = timestamp - this.animOffset;
+			this.animOffset	= 0;
 		}
+
+		reliable.update(timestamp);
 
 		let elapsed = timestamp - gunslinger.animStart;
 		// document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp 
@@ -224,7 +230,12 @@ function init_gunslinger() {
 			if (elapsed > t.duration && !gunslinger.hasReadied) {
 				gunslinger.hasReadied = true;
 				gunslinger.animStart = undefined;
-				gunslinger.triggerCountdown();
+				if (enemyReady && conn.one) {
+					gunslinger.triggerCountdown();
+					reliable.send_cd();
+				} else if (enemyReady) {
+					reliable.send_ready();
+				}
 				gunslinger.indicateReadied();
 				return false;
 			}
@@ -282,6 +293,21 @@ function init_gunslinger() {
 			return false;
 		}
 		return true;
+	}
+
+	function onReady(msg) {
+
+	}
+
+	function onCD(msg) {
+		if (!conn.one) {
+			gunslinger.animOffset = conn.passed_time( parseInt(msg) );
+			gunslinger.triggerCountdown();
+		}
+	}
+
+	function onFire(msg) {
+		console.log( conn.passed_time( parseInt(msg) ) );
 	}
 
 	function stopCheck() {
@@ -383,10 +409,14 @@ function init_gunslinger() {
 	}
 
 	function onMsg(msg) {
-
+		reliable.handle_msg(msg);
 	}
 
-	function initRTCCallback(cn) {
+	function initReliableCallback(rel) {
+		reliable = rel;
+		reliable.on_ready = onReady;
+		reliable.on_cd = onCD;
+		reliable.on_fire = onFire;
 		gunslinger = new Gunslinger(false, false, false, false, readings);
 		gunslinger.checkMotion = checkMotion;
 		gunslinger.triggerReady = triggerReady;
@@ -402,7 +432,11 @@ function init_gunslinger() {
 		gunslinger.indicateFire = indicateFire;
 		gunslinger.updateReadings = updateReadings;
 		gunslinger.indicateReadied = indicateReadied;
+	}
+
+	function initRTCCallback(cn) {
 		conn = cn;
+		init_reliable( initReliableCallback, conn );
 		console.log("init");
 	}
 

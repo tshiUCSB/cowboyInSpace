@@ -72,6 +72,10 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		return String.fromCharCode( o );
 	}
 
+	function passed_time( time ) {
+		return ( Date.now() + offset_time ) - time;
+	}
+
 	function send_time() {
 		game_channel.send( bt( OP_TIME ) + bt( ping_avg ) + Date.now().toString() );
 	}
@@ -150,7 +154,6 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		var msg = evt.data;
 		var code = msg.charCodeAt( 0 );
 		msg = msg.substring( 1 );
-		console.log( code );
 		switch( code ) {
 			case OP_SYNC:
 				game_channel.send( bt( OP_SYNC_ACK ) + msg )
@@ -185,7 +188,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 
 	function callback_empty( err ) {
 		if( err ) {
-			console.log( "error" );
+			//console.log( "error" );
 		}
 	}
 
@@ -293,6 +296,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 					} else {
 						me = p = "2";
 						one = false;
+						callback_info[ "one" ] = one;
 					}
 				} else {
 					me = p = "1";
@@ -315,10 +319,10 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		}
 	}
 
-	console.log( room_code );
-
 	if(callback_init_rtc != null && callback_init_rtc != undefined) {
 		callback_info[ "send" ] = send_gun_packet;
+		callback_info[ "one" ] = one;
+		callback_info[ "passed_time" ] = passed_time;
 		callback_init_rtc( callback_info );
 	}
 
