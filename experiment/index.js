@@ -24,6 +24,7 @@ var values = [];
 for(let z = 0; z < keys.length; ++z) {
 	values.push( readings[keys[z]] );
 }
+readings["yAccGrav"] = 9.8;
 var csv  = "";
 var startTime;
 var interval;
@@ -36,12 +37,14 @@ var devicePermission = {
 	};
 var thresholds = {
 	"ready": {
-		"xyz": 10,
+		"xyz": 3,
 		"yGrav": 5,
 		"duration": 3000
 	},
 	"draw": {
-		"alpha": -100,
+		"dBeta": 95,
+		"betaMoE": 5,
+		"xyz": 3,
 		"populationConstants": [-70, 65, .2, 96]
 	},
 	"fire": {
@@ -59,55 +62,135 @@ function Gunslinger(hasReadied, hasDrawn, hasFired, aclData) {
 	this.hasReadied = hasReadied;
 	this.hasDrawn = hasDrawn;
 	this.hasFired = hasFired;
-	this.readyStart = undefined;
+	this.animStart = undefined;
 	this.readings = aclData;
+
+	this.checkMotion = null;
+
 	this.triggerReady = null;
 	this.checkReady = null;
-	this.stopReady = null;
+	this.stopCheck = null;
+
+	this.triggerDraw = null;
+	this.checkDraw = null;
+	this.indicateDrawn = null;
+
+	this.triggerFire = null;
+	this.checkFire = null;
+	this.indicateFire = null;
+
 	this.updateReadings = null;
 	this.indicateReadied = null;
 	this.animReq = undefined;
+	this.betaI = undefined;
+	this.motionTime = undefined;
+	this.waitEnded = undefined;
+	this.gameStarted = undefined;
 }
 
 function triggerReady() {
-	gunslinger.touchContact = true;
-	window.requestAnimationFrame(gunslinger.checkReady);
+	window.requestAnimationFrame(gunslinger.checkMotion);
 }
 
-function checkReady(timestamp) {
-	if (gunslinger.readyStart === undefined) {
-		gunslinger.readyStart = timestamp;
+function checkMotion(timestamp) {
+	if (gunslinger.animStart === undefined) {
+		gunslinger.animStart = timestamp;
 	}
 
-	let elapsed = timestamp - gunslinger.readyStart;
-	document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp + " | " + gunslinger.readyStart;
+	let elapsed = timestamp - gunslinger.animStart;
+	// document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp 
+	// 	+ " | " + gunslinger.animStart;
 
 	let snap = gunslinger.readings;
-	let t = thresholds.ready;
+	let t = thresholds;
+	let motionFunc;
+	if (!gunslinger.hasReadied) {
+		t = thresholds.ready;
+		motionFunc = gunslinger.checkReady;
+	}
+	else if (gunslinger.hasReadied && !gunslinger.hasDrawn) {
+		logger("checking draw");
+		t = thresholds.draw;
+		motionFunc = gunslinger.checkDraw;
+	}
+	else if (gunslinger.hasReadied && gunslinger.hasDrawn && !gunslinger.hasFired) {
+		t = thresholds.fire;
+		motionFunc = gunslinger.checkFire;
+	}
+	
+
+	let cont = motionFunc(snap, t, elapsed, timestamp);
+	if (cont)
+		gunslinger.animReq = window.requestAnimationFrame(gunslinger.checkMotion);
+}
+
+function checkReady(snap, t, elapsed, timestamp) {
 	let actData = [snap.yAccGrav, snap.x, snap.y, snap.z];
 	let expData = [9.8, 0, 0, 0];
 	let thresh = [t.yGrav, t.xyz, t.xyz, t.xyz];
 	if (checkInMargins(actData, expData, thresh)) {
 		if (elapsed > t.duration && !gunslinger.hasReadied) {
 			gunslinger.hasReadied = true;
+			gunslinger.animStart = undefined;
+			document.getElementById("yeetMode").removeEventListener("touchend", gunslinger.stopCheck);
 			gunslinger.indicateReadied();
-			return;
+			gunslinger.triggerDraw();
+			return false;
 		}
 	}
 	else {
-		gunslinger.readyStart = timestamp;
+		gunslinger.animStart = timestamp;
 	}
-	gunslinger.animReq = window.requestAnimationFrame(gunslinger.checkReady);
+	return true;
 }
 
-function stopReady() {
-	logger("stopping ready");
+function stopCheck() {
+	logger("stopping motion check");
+	gunslinger.animStart = undefined;
 	window.cancelAnimationFrame(gunslinger.animReq);
 }
 
 function indicateReadied() {
-	document.getElementById("yeetMode").style.backgroundColor = "green";
 	playAudio("ghostTown_jingle");
+	document.getElementById("yeetMode").style.backgroundColor = "rgba(0, 255, 0, .7)";
+}
+
+function triggerDraw() {
+	gunslinger.betaI = gunslinger.readings.beta;
+	window.requestAnimationFrame(gunslinger.checkMotion);
+}
+
+function checkDraw(snap, t, elapsed, timestamp) {
+	logger(snap.beta + " | " + gunslinger.betaI + " | " + (snap.beta - gunslinger.betaI));
+	let aclData = [snap.beta - gunslinger.betaI, snap.xAcc, snap.yAcc, snap.zAcc];
+	let expData = [t.dBeta, 0, 0, 0];
+	let thresh = [t.betaMoE, t.xyz, t.xyz, t.xyz];
+	if (checkInMargins(aclData, expData, thresh)) {
+		gunslinger.hasDrawn = true;
+		gunslinger.animStart = undefined;
+		gunslinger.indicateDrawn();
+		return false;
+	}
+	return true;
+}
+
+function indicateDrawn() {
+	playAudio("gun_cock");
+	let yeetMode = document.getElementById("yeetMode");
+	yeetMode.style.display = "initial";
+	yeetMode.style.backgroundColor = "red";
+}
+
+function triggerFire() {
+
+}
+
+function checkFire() {
+	return false;
+}
+
+function indicateFire() {
+
 }
 
 function updateReadings() {
@@ -207,11 +290,11 @@ function startTrackMode() {
 	}
 	if (isMobile) {
 		yeetMode.addEventListener("touchstart", gunslinger.triggerReady);
-		yeetMode.addEventListener("touchend", gunslinger.stopReady);
+		yeetMode.addEventListener("touchend", gunslinger.stopCheck);
 	}
 	else {
 		yeetMode.addEventListener("mousedown", gunslinger.triggerReady);
-		yeetMode.addEventListener("mouseup", gunslinger.stopReady);
+		yeetMode.addEventListener("mouseup", gunslinger.stopCheck);
 	}
 }
 
@@ -372,9 +455,16 @@ function printConsole() {
 
 window.addEventListener( "load", function() {
 	gunslinger = new Gunslinger(false, false, false, readings);
+	gunslinger.checkMotion = checkMotion;
 	gunslinger.triggerReady = triggerReady;
 	gunslinger.checkReady = checkReady;
-	gunslinger.stopReady = stopReady;
+	gunslinger.stopCheck = stopCheck;
+	gunslinger.triggerDraw = triggerDraw;
+	gunslinger.checkDraw = checkDraw;
+	gunslinger.indicateDrawn = indicateDrawn;
+	gunslinger.triggerFire = triggerFire;
+	gunslinger.checkFire = checkFire;
+	gunslinger.indicateFire = indicateFire;
 	gunslinger.updateReadings = updateReadings;
 	gunslinger.indicateReadied = indicateReadied;
 	let hasPermission = checkDevicePermission();
