@@ -1,4 +1,4 @@
-function init_rtc() {
+function init_rtc( init_rtc_callback ) {
 	var URL = document.location.href,
 		RTC_CFG = { 
 			iceServers : [ { url : "stun:stun2.1.google.com:19302" } ] 
@@ -14,7 +14,8 @@ function init_rtc() {
 		OP_TIME = 0x3,
 		OP_TIME_ACK = 0x4;
 
-	var	room_code = "",
+	var	callback_info = {},
+		room_code = "",
 		duel = "",
 		game_rtc = null,
 		game_channel = null,
@@ -289,6 +290,8 @@ function init_rtc() {
 	firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
 
 	console.log( room_code );
-}
 
-init_rtc();
+	if(init_rtc_callback != null && init_rtc_callback != undefined) {
+		init_rtc_callback( callback_info );
+	}
+}
