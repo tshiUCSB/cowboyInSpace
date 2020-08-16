@@ -20,10 +20,6 @@
 	z-index: 100;
 }
 
-#absoluteContainer {
-	position: absolute;
-}
-
 #controlContainer {
 	position: absolute;
 	top: 0;
@@ -41,13 +37,22 @@
 	font-size: 5vw;
 	text-align: center;
 	color: white;
+	animation-name: flash;
+	animation-duration: 1s;
+	animation-iteration-count: infinite;
+	animation-direction: alternate-reverse;
+	animation-timing-function: linear;
 }
 
-#cis {
-	color: white;
-	/*-webkit-text-stroke-width: 6px;
-    -webkit-text-stroke-color: white;
-*/}
+
+@keyframes flash {
+	0% {opacity: 1;}
+	100% {opacity: 0;}
+}
+
+
+
+
 
 
 

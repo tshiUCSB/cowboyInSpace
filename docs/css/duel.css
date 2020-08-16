@@ -5,10 +5,39 @@ body, html {
 	-moz-user-select: none;
 	-ms-user-select: none;
 	user-select: none;
+	overflow: hidden;
 }
 
 @font-face {
 	font-family: 'Rye', cursive;
+}
+
+.center {
+	margin: 0;
+	position: absolute;
+	top: 50%;
+	left: 50%;
+	transform: translate(-50%, -50%);
+}
+
+.center p {
+	color: white;
+	font-size: 5vw;
+	text-align: center;
+}
+
+#roomCode {
+	font-size: 8vw;
+}
+
+#waitText {
+	font-size: 3vw;
+}
+
+.dot {
+	animation-name: grow;
+	animation-duration: 2s;
+	animation-iteration-count: infinite;
 }
 
 #yeetMode {
@@ -30,3 +59,10 @@ body, html {
 .show {
 	display: block!important;
 }
+
+@keyframes grow {
+	0% {font-size: 5vw;}
+	50% {font-size: 8vw;}
+	100% {font-size: 5vw;}
+}
+

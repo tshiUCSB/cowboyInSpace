@@ -1,1 +1,23 @@
 /* room.css */
+
+
+#startControls {
+	grid-column-start: 4;
+    grid-column-end: span 4;
+    grid-row-start: 4;
+    grid-row-end: span 5;
+}
+
+#controlContainer {
+	position: absolute;
+	top: 0;
+}
+
+#codeInput {
+	display: none;
+	background-color: white;
+	color: #1c3474;
+	border-style: none;
+	padding: 30px 0;
+	text-align: center;
+}
