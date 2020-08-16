@@ -273,7 +273,7 @@ function getIndivPermission(evt, name) {
 function getDevicePermission() {
 	logger("requesting permission");
 	if (!devicePermission["motion"]) getIndivPermission(window.DeviceMotionEvent, "motion");
-	if (!devicePermission["motion"]) getIndivPermission(window.DeviceOrientationEvent, "orientation");
+	if (!devicePermission["orientation"]) getIndivPermission(window.DeviceOrientationEvent, "orientation");
 	let permButton = document.getElementById("permissionButton");
 	permButton.style.display = checkDevicePermission ? "none" : "initial";
 }
