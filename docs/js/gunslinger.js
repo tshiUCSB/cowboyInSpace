@@ -399,6 +399,7 @@ function init_gunslinger() {
 			interval = 10;
 			isReading = true;
 			startTracking(interval);
+			gunslinger.stopCheck();
 			gunslinger.triggerReady();
 		}
 		else {

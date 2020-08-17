@@ -182,6 +182,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 			case OP_TIME:
 				ping_avg = msg.charCodeAt( 0 );
 				offset_time = ( parseInt( msg.substring( 1 ) ) + ping_avg ) - Date.now();
+				console.log(offset_time);
 				game_channel.send( bt( OP_TIME_ACK ) + Date.now().toString() );
 				if( !time_synced ) {
 					callback_sync();
@@ -190,6 +191,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 				break;
 			case OP_TIME_ACK:
 				offset_time = ( parseInt( msg ) + ping_avg ) - Date.now();
+				console.log(offset_time);
 				time_synced = true;
 				break;
 			case OP_GUNSLINGER:
