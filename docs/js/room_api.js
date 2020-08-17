@@ -36,7 +36,7 @@ function create_duel() {
 
 function callback_join_room( snapshot ) {
 	if( snapshot.exists() ) {
-		window.location.replace( "../duel/?room=" + c );
+		window.location.replace( "../duel/?room=" + room_code );
 	} else {
 		alert( "Code is invalid!" );
 	}
