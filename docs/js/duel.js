@@ -229,7 +229,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 				if( action.from == "2" ) {
 					game_channel = game_rtc.createDataChannel( "game", { reliable : false } );
 					data_channel_handlers();
-					game_rtc.createOffer().then( function( offer ) {
+					game_rtc.createOffer( {offerToReceiveAudio: 1} ).then( function( offer ) {
 						game_rtc.setLocalDescription( offer );
 						var data = {};
 						data[ "type" ] = "offer";
@@ -250,7 +250,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 			case "offer":
 				if( action.from == "1" ) {
 					game_rtc.setRemoteDescription( new RTCSessionDescription( JSON.parse( action.offer ) ) );
-					game_rtc.createAnswer().then( function( answer ) {
+					game_rtc.createAnswer( {offerToReceiveAudio: 1} ).then( function( answer ) {
 						console.log(answer);
 						game_rtc.setLocalDescription( answer );
 						var data = {};
@@ -276,8 +276,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 	}
 
 	function callback_ice_candidate( evt ) {
-		console.log( "here we have some ice stuff" );
-		console.log( evt.candidate );
+		console.log(evt.candidate);
 		if( evt.candidate ) {
 			var data = {},
 				id,
