@@ -346,6 +346,7 @@ function init_gunslinger() {
 				showLose();
 			}
 		}
+		playAudio("gun_shot");
 	}
 
 	function stopCheck() {
