@@ -27,7 +27,7 @@ body, html {
 }
 
 .tryAgain {
-	display: none;
+	/*display: none;*/
 }
 
 #winScreen p{
