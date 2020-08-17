@@ -372,6 +372,7 @@ function init_gunslinger() {
 	function startTrackMode() {
 		let trackScreen = document.getElementById("yeetMode");
 		yeetMode.setAttribute("class", "show");
+		document.getElementById("syncScreen").setAttribute("class", "hide center");
 		if (isMobile) {
 			yeetMode.addEventListener("touchstart", toggleTracking);
 			yeetMode.addEventListener("touchend", toggleTracking);

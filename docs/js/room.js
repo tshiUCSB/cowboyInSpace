@@ -22,7 +22,7 @@ function init_room() {
 			BUTTON_JOIN.innerHTML = "Join";
 		}
 		else if (BUTTON_JOIN.innerHTML == "Join") {
-			let code = CODE_INPUT.value;
+			let code = CODE_INPUT.value.toUpperCase();
 			join_duel(code);
 		}
 	}

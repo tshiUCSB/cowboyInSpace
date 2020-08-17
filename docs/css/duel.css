@@ -64,6 +64,13 @@ body, html {
 	font-size: 5vw;
 }
 
+.fadeDark {
+	animation-name: fadeDark;
+	animation-duration: 1.5s;
+	animation-timing-function: linear;
+	animation-fill-mode: forwards;
+}
+
 .hide {
 	display: none!important;
 }
@@ -76,5 +83,10 @@ body, html {
 	0% {font-size: 5vw;}
 	50% {font-size: 8vw;}
 	100% {font-size: 5vw;}
+}
+
+@keyframes fadeDark {
+	0% {background-color: rgba(0, 0, 0, 0);}
+	100% {background-color: rgba(0, 0, 0, .7);}
 }
 
