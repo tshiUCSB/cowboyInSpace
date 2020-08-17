@@ -387,6 +387,7 @@ function init_gunslinger() {
 			AUD_JINGLE.play();
 			AUD_GUN_COCK.play();
 			AUD_GUN_SHOT.play();
+			AUD_COUNTDOWN.play();
 			AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
 			AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
 			AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
