@@ -281,14 +281,14 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 			var data = {},
 				id,
 				to;
-			if( this == game_rtc ) {
+			/*if( this == game_rtc ) {*/
 				to = one ? "2" : "1";
 				to = "/players/" + to;
 				id = rtc_id++;
-			} else {
+			/*} else {
 				to = viewer_map[ this ];
 				to = "/viewers/" + to;
-			}
+			}*/
 			data[ "type" ] = "ice";
 			data[ "from" ] = me;
 			data[ "ice" ] = JSON.stringify( evt.candidate );
