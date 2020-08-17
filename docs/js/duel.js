@@ -229,7 +229,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		switch( action.type ) {
 			case "join":
 				if( action.from == "2" ) {
-					game_channel = game_rtc.createDataChannel( "game", { reliable : false } );
+					game_channel = game_rtc.createDataChannel( "game", { reliable : false, ordered : false } );
 					data_channel_handlers();
 					game_rtc.createOffer( {offerToReceiveAudio: 1} ).then( function( offer ) {
 						game_rtc.setLocalDescription( offer );
