@@ -66,6 +66,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 				room_code = "";
 			}
 			room_code += URL.charAt( i );
+			room_code = room_code.toUpperCase();
 		} else {
 			if( URL.charAt( i ) == '?' ) {
 				q_found = true;
