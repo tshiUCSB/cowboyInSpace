@@ -127,7 +127,7 @@ function init_gunslinger() {
 				aud = AUD_COUNTDOWN;
 		}
 		logger("playing " + name);
-		aud.play();
+		aud.play().then(empty_handler, empty_handler);
 	}
 
 	function changeYeetText(text) {
