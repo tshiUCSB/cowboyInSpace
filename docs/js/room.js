@@ -4,11 +4,21 @@ function init_room() {
 		/Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ?
 	 		true : false;
 
+	var CODE_INPUT = document.getElementById("codeInput");
+	var INPUT_MESSAGE = document.getElementById("inputMessage");
 	var BUTTON_CREATE = document.getElementById("createButton");
 	var BUTTON_JOIN = document.getElementById("joinButton");
-	var CODE_INPUT = document.getElementById("codeInput");
 
 	var click_evt = isMobile ? "touchend" : "click";
+
+	function handle_input_change(e) {
+		if (e.data) {
+			if (!e.data.match(/[a-z]/i)) {
+				CODE_INPUT.value = CODE_INPUT.value.slice(0, CODE_INPUT.value.length - 1);
+			}
+			CODE_INPUT.value = CODE_INPUT.value.toUpperCase();
+		}
+	}
 
 	function handle_button_create() {
 		BUTTON_CREATE.removeEventListener( click_evt, handle_button_create );
@@ -22,11 +32,18 @@ function init_room() {
 			BUTTON_JOIN.innerHTML = "Join";
 		}
 		else if (BUTTON_JOIN.innerHTML == "Join") {
-			let code = CODE_INPUT.value.toUpperCase();
-			join_duel(code);
+			let code = CODE_INPUT.value;
+			if (code.length != 5) {
+				INPUT_MESSAGE.innerHTML = "Room Code should be 5 letters long";
+			}
+			else {
+				INPUT_MESSAGE.innerHTML = "";
+				join_duel(code);
+			}
 		}
 	}
 
+	CODE_INPUT.addEventListener( 'input', handle_input_change );
 	BUTTON_CREATE.addEventListener( click_evt, handle_button_create );
 	BUTTON_JOIN.addEventListener( click_evt, handle_button_join);
 }
