@@ -43,7 +43,7 @@ function callback_join_room( snapshot ) {
 }
 
 function join_duel( c ) {
-	firebase.database().ref( "/duels/" + ( room_code = c ) ).once( "value" ).then( callback_query_room );
+	firebase.database().ref( "/duels/" + ( room_code = c ) ).once( "value" ).then( callback_join_room );
 }
 
 function watch_duel() {
