@@ -107,6 +107,8 @@ function init_gunslinger() {
 		this.betaI = undefined;
 		this.xAccMin = undefined;
 		this.xAccMax = undefined;
+
+		this.lastCountdown = -1;
 	}
 
 	function playAudio(name) {
@@ -248,10 +250,12 @@ function init_gunslinger() {
 	}
 
 	function checkCountdown(snap, t, elapsed, timestamp) {
-		if (elapsed % 1000 < t.wholeCount) {
-			let yeetText = document.getElementById("yeetMode").innerHTML;
-			let num = parseInt(yeetText.charAt(yeetText.length - 1));
-			changeYeetText("" + (num - 1));
+		let thisCount = (((t.duration - elapsed) / 1000) | 0);
+		if ( thisCount != gunslinger.lastCountdown ) {
+			//let yeetText = document.getElementById("yeetMode").innerHTML;
+			//let num = parseInt(yeetText.charAt(yeetText.length - 1));
+			gunslinger.lastCountdown = thisCount; 
+			changeYeetText("" + thisCount);
 			playAudio("countdown");
 		}
 		if (elapsed > t.duration) {
