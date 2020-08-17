@@ -54,6 +54,8 @@ body {
 .gameButton a {
 	text-decoration: none;
 	color: white;
+	width: 100%;
+	display: block;
 }
 
 .gameButton:hover {
@@ -72,7 +74,7 @@ button {
 	z-index: -100;
 	position: absolute;
 	top: 0;
-	animation-duration: 9s;
+	animation-duration: 20s;
 	animation-timing-function: linear;
 	animation-iteration-count: infinite;
 }
