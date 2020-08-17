@@ -1,11 +1,18 @@
 function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 	var URL = document.location.href,
 		RTC_CFG = { 
-			iceServers : [ { url : "stun:stun2.1.google.com:19302" } ] 
+			iceServers : [ { urls : "stun:stun2.1.google.com:19302" } ] 
 		},
 		RTC_OPT = {
-			optional : [ { RtpDataChannels : true } ]
+			optional : [ { RtpDataChannels : false } ]
 		},
+		RTC_MEDIA = {
+			optional: [],
+			mandatory: {
+				OfferToReceiveAudio: false,
+				OfferToReceiveVideo: false
+			}
+		}
 		DELAY_TIME = 100,
 		DELAY_SYNC = 100,
 		MAX_SYNCS = 20,
@@ -197,28 +204,42 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		}
 	}
 
+	function data_channel_handlers() {
+		console.log("adding handlers");
+		game_channel.onopen = handle_game_channel_open;
+		game_channel.onmessage = handle_game_channel_msg;
+	}
+
+	function callback_data_channel( evt ) {
+		game_channel = evt.channel;
+		data_channel_handlers();
+	}
+
 	function callback_rtc( snapshot ) {
 		var action = snapshot.val();
-		console.log( action );
 		if( action.from == me ) return;
 		var to;
 		if( action.from == "1" || action.from == "2" ) {
 			if( action.id <= last_id ) return;
 			last_id = action.id;
 		}
+		console.log( action );
 		switch( action.type ) {
 			case "join":
 				if( action.from == "2" ) {
+					game_channel = game_rtc.createDataChannel( "game", { reliable : false } );
+					data_channel_handlers();
 					game_rtc.createOffer().then( function( offer ) {
 						game_rtc.setLocalDescription( offer );
-					} ).then( function() {
 						var data = {};
 						data[ "type" ] = "offer";
 						data[ "from" ] = me;
-						data[ "offer" ] = JSON.stringify( game_rtc.localDescription );
+						data[ "offer" ] = JSON.stringify( offer );
 						data[ "id" ] = rtc_id++;
 						firebase.database().ref( duel + "/players/2" ).push().set( data, callback_empty );
-					} );
+					}, function( err ) {} );
+				} else if( action.from == "1" ) {
+					game_rtc.ondatachannel = callback_data_channel;
 				}
 				break;
 			case "ice":
@@ -230,15 +251,15 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 				if( action.from == "1" ) {
 					game_rtc.setRemoteDescription( new RTCSessionDescription( JSON.parse( action.offer ) ) );
 					game_rtc.createAnswer().then( function( answer ) {
+						console.log(answer);
 						game_rtc.setLocalDescription( answer );
-					} ).then( function() {
 						var data = {};
 						data[ "type" ] = "answer";
 						data[ "from" ] = me;
-						data[ "answer" ] = JSON.stringify( game_rtc.localDescription );
+						data[ "answer" ] = JSON.stringify( answer );
 						data[ "id" ] = rtc_id++;
 						firebase.database().ref( duel + "/players/2" ).push().set( data, callback_empty );
-					} );
+					}, function( err ) {} );
 				}
 				break;
 			case "answer":
@@ -281,9 +302,6 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		} else {
 			game_rtc = new RTCPeerConnection( RTC_CFG, RTC_OPT );
 			game_rtc.onicecandidate = callback_ice_candidate;
-			game_channel = game_rtc.createDataChannel( "game", { reliable : false } );
-			game_channel.onopen = handle_game_channel_open;
-			game_channel.onmessage = handle_game_channel_msg;
 			firebase.database().ref( duel + "/players/1" ).on( "value", callback_signals );
 			firebase.database().ref( duel + "/players/2" ).on( "value", callback_signals );
 		}
@@ -322,7 +340,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 			SCREEN_INVALID.setAttribute( "class", "show center" );
 		}
 	}
-
+	
 	if(callback_init_rtc != null && callback_init_rtc != undefined) {
 		callback_info[ "send" ] = send_gun_packet;
 		callback_info[ "one" ] = one;
@@ -331,5 +349,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		callback_init_rtc( callback_info );
 	}
 
-	firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
+	navigator.mediaDevices.getUserMedia( { audio: true, video: true } ).then( function() {
+		firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
+	} );
 }
