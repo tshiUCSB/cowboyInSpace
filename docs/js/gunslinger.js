@@ -56,7 +56,7 @@ function init_gunslinger() {
 		},
 		"draw": {
 			"dBeta": 90,
-			"betaMoE": 8,
+			"betaMoE": 15,
 			"xyz": 3,
 			"populationConstants": [-70, 65, .2, 96]
 		},
@@ -163,7 +163,6 @@ function init_gunslinger() {
 	function triggerDraw() {
 		changeYeetText("Raise your phone to draw weapon");
 		playAudio("jingle");
-		gunslinger.betaI = gunslinger.readings.beta;
 		window.requestAnimationFrame(gunslinger.checkMotion);
 	}
 
@@ -233,6 +232,7 @@ function init_gunslinger() {
 			if (elapsed > t.duration && !gunslinger.hasReadied) {
 				gunslinger.hasReadied = true;
 				gunslinger.animStart = undefined;
+				gunslinger.betaI = gunslinger.readings.beta;
 				if (enemyReady && conn.one) {
 					gunslinger.triggerCountdown();
 					reliable.send_cd();
