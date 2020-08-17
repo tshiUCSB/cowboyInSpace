@@ -381,13 +381,17 @@ function init_gunslinger() {
 		}
 	}
 
+	function empty_handler( value ) {
+
+	}
+
 	function toggleTracking() {
 		if(gunslinger.hasReadied) return;
 		if(!gunslinger.audioLoaded) {
-			AUD_JINGLE.play();
-			AUD_GUN_COCK.play();
-			AUD_GUN_SHOT.play();
-			AUD_COUNTDOWN.play();
+			AUD_JINGLE.play().then(empty_handler, empty_handler);
+			AUD_GUN_COCK.play().then(empty_handler, empty_handler);
+			AUD_GUN_SHOT.play().then(empty_handler, empty_handler);
+			AUD_COUNTDOWN.play().then(empty_handler, empty_handler);
 			AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
 			AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
 			AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
