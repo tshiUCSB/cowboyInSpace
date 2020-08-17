@@ -34,8 +34,16 @@ function create_duel() {
 	firebase.database().ref( "/duels/" + ( room_code = random_code() ) ).once( "value" ).then( callback_query_room );
 }
 
+function callback_join_room( snapshot ) {
+	if( snapshot.exists() ) {
+		window.location.replace( "../duel/?room=" + c );
+	} else {
+		alert( "Code is invalid!" );
+	}
+}
+
 function join_duel( c ) {
-	window.location.replace( "../duel/?room=" + c );
+	firebase.database().ref( "/duels/" + ( room_code = c ) ).once( "value" ).then( callback_query_room );
 }
 
 function watch_duel() {
