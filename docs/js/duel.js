@@ -276,6 +276,8 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 	}
 
 	function callback_ice_candidate( evt ) {
+		console.log( "here we have some ice stuff" );
+		console.log( evt.candidate );
 		if( evt.candidate ) {
 			var data = {},
 				id,
