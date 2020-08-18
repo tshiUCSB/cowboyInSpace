@@ -50,6 +50,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		acked_syncs = 0,
 		offset_time = -1,
 		ping_avg = -1,
+		debug = false;
 		me = "",
 		i;
 
@@ -345,15 +346,21 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		}
 	}
 	
+	debug = ( room_code == "GDB" );
 	if(callback_init_rtc != null && callback_init_rtc != undefined) {
 		callback_info[ "send" ] = send_gun_packet;
 		callback_info[ "one" ] = one;
+		callback_info[ "debug" ] = debug;
 		callback_info[ "passed_time" ] = passed_time;
 		callback_info[ "my_time" ] = my_time;
 		callback_init_rtc( callback_info );
 	}
 
 	navigator.mediaDevices.getUserMedia( { audio: true, video: true } ).then( function() {
-		firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
+		if( debug ) {
+			callback_sync();
+		} else {
+			firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
+		}
 	} );
 }

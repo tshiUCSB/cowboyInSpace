@@ -2,6 +2,7 @@ function init_gunslinger() {
 	var AUD_SFX = new Audio("../assets/audio/empty.wav");
 	var audEnd;
 	var gunslinger;
+	var debug = false;
 	var enableLog = true;
 	var isReading = false;
 	var startEvt = "click";
@@ -237,11 +238,15 @@ function init_gunslinger() {
 				gunslinger.hasReadied = true;
 				gunslinger.animStart = undefined;
 				gunslinger.betaI = gunslinger.readings.beta;
-				if (enemyReady && conn.one) {
+				if (debug) {
 					gunslinger.triggerCountdown();
-					reliable.send_cd();
 				} else {
-					reliable.send_ready();
+					if (enemyReady && conn.one) {
+						gunslinger.triggerCountdown();
+						reliable.send_cd();
+					} else {
+						reliable.send_ready();
+					}
 				}
 				gunslinger.indicateReadied();
 				return false;
@@ -298,8 +303,13 @@ function init_gunslinger() {
 		if (checkInMargins(aclData, expData, thresh) && (dXAcc > t.dXAcc) && !gunslinger.hasFired) {
 			gunslinger.animStart = undefined;
 			gunslinger.hasFired = true;
-			gunslinger.fireTime	= reliable.send_fire(0);
-			gunslinger.indicateFire();
+			if(debug) {
+				gunslinger.indicateFire();
+				showWin();
+			} else {
+				gunslinger.fireTime	= reliable.send_fire(0);
+				gunslinger.indicateFire();
+			}
 			return false;
 		}
 		return true;
@@ -487,7 +497,12 @@ function init_gunslinger() {
 
 	function initRTCCallback(cn) {
 		conn = cn;
-		init_reliable( initReliableCallback, conn );
+		debug = conn.debug;
+		if(debug) {
+			initReliableCallback(null);
+		} else {
+			init_reliable( initReliableCallback, conn );
+		}
 		console.log("init");
 	}
 
