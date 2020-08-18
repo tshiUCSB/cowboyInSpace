@@ -193,7 +193,7 @@ function init_gunslinger() {
 			this.animOffset	= 0;
 		}
 
-		reliable.update(timestamp);
+		if (!debug) reliable.update(timestamp);
 
 		let elapsed = timestamp - gunslinger.animStart;
 		// document.getElementById("consoleLog").innerHTML = elapsed + " | " + timestamp 
