@@ -113,8 +113,8 @@ function init_gunslinger() {
 		let audStart;
 		switch(name) {
 			case "jingle":
-				audStart = 1;
-				audEnd = 2.5;
+				audStart = 3;
+				audEnd = 4.5;
 				break;
 			case "gun_cock":
 				audStart = 5;
@@ -125,8 +125,8 @@ function init_gunslinger() {
 				audEnd = 8.5;
 				break;
 			case "countdown":
-				audStart = 3;
-				audEnd = 4.5;
+				audStart = 1;
+				audEnd = 2.5;
 				break;
 		}
 		AUD_SFX.currentTime = audStart;
