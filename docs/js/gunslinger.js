@@ -335,7 +335,7 @@ function init_gunslinger() {
 
 	function showLose() {
 		document.getElementById("yeetMode").setAttribute("class", "hide center");
-		document.getElementById("loseScreen").setAttribute("class", "show center");
+		document.getElementById("loseScreen").setAttribute("class", "show");
 		// document.getElementByClassName("absoluteContainer")[0].setAttribute("class", "absoluteContainer fadeDark");
 	}
 

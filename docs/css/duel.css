@@ -64,6 +64,10 @@ body, html {
 	font-size: 5vw;
 }
 
+#glassOverlay {
+	width: 136vw;	
+}
+
 .fadeDark {
 	animation-name: fadeDark;
 	animation-duration: 1.5s;
