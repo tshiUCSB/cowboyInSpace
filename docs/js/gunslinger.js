@@ -475,9 +475,11 @@ function init_gunslinger() {
 
 	function initReliableCallback(rel) {
 		reliable = rel;
-		reliable.on_ready = onReady;
-		reliable.on_cd = onCD;
-		reliable.on_fire = onFire;
+		if(!debug) {
+			reliable.on_ready = onReady;
+			reliable.on_cd = onCD;
+			reliable.on_fire = onFire;
+		}
 		gunslinger = new Gunslinger(false, false, false, false, readings);
 		gunslinger.checkMotion = checkMotion;
 		gunslinger.triggerReady = triggerReady;
