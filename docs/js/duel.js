@@ -50,7 +50,7 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		acked_syncs = 0,
 		offset_time = -1,
 		ping_avg = -1,
-		debug = false;
+		debug = false,
 		me = "",
 		i;
 
@@ -356,11 +356,11 @@ function init_rtc( cb_init_rtc, cb_packet, cb_sync ) {
 		callback_init_rtc( callback_info );
 	}
 
-	navigator.mediaDevices.getUserMedia( { audio: true, video: true } ).then( function() {
-		if( debug ) {
-			callback_sync();
-		} else {
+	if( debug ) {
+		callback_sync();
+	} else {
+		navigator.mediaDevices.getUserMedia( { audio: true, video: true } ).then( function() {
 			firebase.database().ref( duel ).once( "value" ).then( callback_query_room );
-		}
-	} );
+		} );
+	}
 }
