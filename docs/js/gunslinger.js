@@ -1,8 +1,6 @@
 function init_gunslinger() {
-	var AUD_GUN_COCK = new Audio("../assets/audio/empty.wav");
-	var AUD_GUN_SHOT = new Audio("../assets/audio/empty.wav");
-	var AUD_JINGLE = new Audio("../assets/audio/empty.wav");
-	var AUD_COUNTDOWN = new Audio("../assets/audio/empty.wav");
+	var AUD_SFX = new Audio("../assets/audio/empty.wav");
+	var audEnd;
 	var gunslinger;
 	var enableLog = true;
 	var isReading = false;
@@ -112,22 +110,28 @@ function init_gunslinger() {
 	}
 
 	function playAudio(name) {
-		let aud;
+		let audStart;
 		switch(name) {
 			case "jingle":
-				aud = AUD_JINGLE;
+				audStart = 1;
+				audEnd = 2.5;
 				break;
 			case "gun_cock":
-				aud = AUD_GUN_COCK;
+				audStart = 5;
+				audEnd = 6.5;
 				break;
 			case "gun_shot":
-				aud = AUD_GUN_SHOT;
+				audStart = 7;
+				audEnd = 8.5;
 				break;
 			case "countdown":
-				aud = AUD_COUNTDOWN;
+				audStart = 3;
+				audEnd = 4.5;
+				break;
 		}
+		AUD_SFX.currentTime = audStart;
 		logger("playing " + name);
-		aud.play().then(empty_handler, empty_handler);
+		AUD_SFX.play().then(empty_handler, empty_handler);
 	}
 
 	function changeYeetText(text) {
@@ -388,17 +392,18 @@ function init_gunslinger() {
 
 	}
 
+	function handleSfx() {
+		if (audEnd == null || audEnd == undefined || AUD_SFX.currentTime >= audEnd) {
+			AUD_SFX.pause();
+		}
+	}
+
 	function toggleTracking() {
 		if(gunslinger.hasReadied) return;
 		if(!gunslinger.audioLoaded) {
-			AUD_JINGLE.play().then(empty_handler, empty_handler);
-			AUD_GUN_COCK.play().then(empty_handler, empty_handler);
-			AUD_GUN_SHOT.play().then(empty_handler, empty_handler);
-			AUD_COUNTDOWN.play().then(empty_handler, empty_handler);
-			AUD_JINGLE.src = "../assets/audio/ghostTown_jingle.wav";
-			AUD_GUN_COCK.src = "../assets/audio/gun_cock.wav";
-			AUD_GUN_SHOT.src = "../assets/audio/gun_shot.wav";
-			AUD_COUNTDOWN.src = "../assets/audio/countdown.wav";
+			AUD_SFX.play().then(empty_handler, empty_handler);
+			AUD_SFX.src = "../assets/audio/sfx.wav";
+			AUD_SFX.addEventListener("timeupdate", handleSfx);
 			gunslinger.audioLoaded = true;
 		}
 		logger("tracking toggled");
