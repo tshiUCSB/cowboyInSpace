@@ -85,7 +85,7 @@ button {
 
 #bg2 {
 	transform: translateX(100%);
-	left: -1px;
+	left: -2px;
 	animation-name: parallax2;
 }
 
